@@ -1,0 +1,139 @@
+.inventory-screen {
+  position: fixed;
+  inset: 0;
+  top: 56px;
+  bottom: 64px;
+  background: linear-gradient(180deg, #0a0e27 0%, #111633 100%);
+  z-index: 90;
+  overflow-y: auto;
+  padding: 20px 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.inventory-header {
+  margin-bottom: 20px;
+}
+
+.inventory-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.inventory-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+.stat-sep {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* Empty state */
+.inventory-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 4px;
+}
+
+.empty-sub {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+/* Grid */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.inv-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+}
+
+.inv-card:active {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.inv-card-emoji {
+  font-size: 2.2rem;
+}
+
+.inv-card-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.inv-card-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.inv-card-cp {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.inv-card-rarity {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.rarity-dot-common { background: #aaa; }
+.rarity-dot-uncommon { background: #4ECDC4; }
+.rarity-dot-rare { background: #FFD700; }
+.rarity-dot-legendary { background: #FF6B35; box-shadow: 0 0 6px rgba(255, 107, 53, 0.5); }
+
+.rarity-card-legendary {
+  border-color: rgba(255, 107, 53, 0.15);
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.rarity-card-rare {
+  border-color: rgba(255, 215, 0, 0.1);
+}

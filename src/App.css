@@ -1,0 +1,177 @@
+/* ===========================
+   App Layout
+   =========================== */
+.app {
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  position: relative;
+  background: #0a0e27;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ===========================
+   Map
+   =========================== */
+.game-map-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.game-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Recenter button */
+.recenter-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(10, 14, 39, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #4ECDC4;
+  font-size: 1.3rem;
+  cursor: pointer;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.recenter-btn:active {
+  transform: scale(0.9);
+  background: rgba(78, 205, 196, 0.2);
+}
+
+/* ===========================
+   Player Marker
+   =========================== */
+.player-marker {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.player-dot {
+  position: absolute;
+  inset: 4px;
+  background: #4ECDC4;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 0 10px rgba(78, 205, 196, 0.6);
+  z-index: 2;
+}
+
+.player-pulse {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: rgba(78, 205, 196, 0.25);
+  animation: player-pulse-anim 2s ease-in-out infinite;
+}
+
+@keyframes player-pulse-anim {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(0.8); opacity: 0; }
+}
+
+/* ===========================
+   Creature Mapbox Layers styling note:
+   Creatures now use native Mapbox WebGL layers (GeoJSON + Symbol layer).
+   Their styling is defined in GameMap.tsx inside map.addLayer()
+   =========================== */
+
+/* ===========================
+   Profile Screen
+   =========================== */
+.profile-screen {
+  position: fixed;
+  inset: 0;
+  top: 56px;
+  bottom: 64px;
+  background: linear-gradient(180deg, #0a0e27 0%, #111633 100%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1.5rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.profile-avatar-lg {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4ECDC4, #44A08D);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 20px rgba(78, 205, 196, 0.3);
+}
+
+.profile-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 6px;
+}
+
+.profile-level-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #4ECDC4;
+  background: rgba(78, 205, 196, 0.12);
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.profile-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.psc-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.psc-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

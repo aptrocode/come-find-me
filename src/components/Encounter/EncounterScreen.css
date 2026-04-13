@@ -1,0 +1,288 @@
+.encounter-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease;
+}
+
+.encounter-overlay.transitioning {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.encounter-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 5, 20, 0.85); /* Slightly darker for better 3D contrast */
+}
+
+.encounter-3d-scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10; /* Lower than UI */
+  touch-action: none;
+}
+
+.encounter-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  z-index: 20;
+  animation: flashAnim 0.4s ease-out;
+  pointer-events: none;
+}
+
+@keyframes flashAnim {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.encounter-content-3d {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px);
+  pointer-events: none; /* Let touches pass through to canvas */
+}
+
+/* Header Info */
+.encounter-header-info {
+  margin-top: 80px;
+  text-align: center;
+  background: rgba(10, 14, 39, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: auto;
+  animation: slideDown 0.5s ease;
+}
+
+.encounter-name {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px;
+  letter-spacing: 0.02em;
+}
+
+.encounter-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.encounter-rarity,
+.encounter-type,
+.encounter-cp {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rarity-tag-common { background: rgba(170, 170, 170, 0.2); color: #ccc; }
+.rarity-tag-uncommon { background: rgba(78, 205, 196, 0.2); color: #4ECDC4; }
+.rarity-tag-rare { background: rgba(255, 215, 0, 0.2); color: #FFD700; }
+.rarity-tag-legendary { background: rgba(255, 107, 53, 0.2); color: #FF6B35; }
+
+.encounter-type {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.encounter-cp {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Prompt */
+.encounter-prompt {
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.2rem;
+  font-weight: 700;
+  pointer-events: none;
+  animation: bob 2s ease-in-out infinite;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translate(-50%, 0); opacity: 0.5; }
+  50% { transform: translate(-50%, -10px); opacity: 0.8; }
+}
+
+/* Bottom Actions */
+.encounter-bottom-area {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  pointer-events: auto;
+  animation: slideUp 0.5s ease;
+}
+
+.encounter-result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.result-caught { background: rgba(78, 205, 196, 0.8); border: 1px solid #44D9B0; }
+.result-fled { background: rgba(255, 107, 53, 0.8); border: 1px solid #FF8E53; }
+.result-missed { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); }
+
+.result-icon { font-size: 1.4rem; }
+.result-text { font-size: 1rem; font-weight: 700; color: #fff; text-align: center; }
+
+.encounter-actions-3d {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.close-btn {
+  width: 100%;
+  max-width: 320px;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #4ECDC4, #44A08D);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+}
+
+.close-btn:active {
+  transform: scale(0.95);
+}
+
+.run-btn {
+  padding: 12px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  background: rgba(10, 14, 39, 0.5);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  backdrop-filter: blur(4px);
+}
+
+.run-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Animations */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.encounter-overlay.closing-zoom {
+  transform: scale(0.95);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Loading spinner during transition */
+.encounter-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.encounter-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(78, 205, 196, 0.2);
+  border-top-color: #4ECDC4;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error fallback */
+.encounter-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(5, 5, 20, 0.95);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  z-index: 15;
+}
+
+.encounter-error-icon {
+  font-size: 2.5rem;
+}
+
+.encounter-error button {
+  margin-top: 8px;
+  padding: 10px 24px;
+  border: 1px solid rgba(78, 205, 196, 0.4);
+  border-radius: 12px;
+  background: rgba(78, 205, 196, 0.15);
+  color: #4ECDC4;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.encounter-error button:active {
+  transform: scale(0.95);
+  background: rgba(78, 205, 196, 0.3);
+}
