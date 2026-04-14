@@ -1,5 +1,5 @@
 import { useEffect, Suspense } from 'react'
-import { useAdminStore } from '../../store/useAdminStore'
+import { useAdminStore } from '../../../store/useAdminStore'
 import AdminPage from './AdminPage'
 
 export default function AdminApp() {

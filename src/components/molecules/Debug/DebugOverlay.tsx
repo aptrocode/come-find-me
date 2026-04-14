@@ -1,11 +1,11 @@
-import { useAdminStore } from '../../store/useAdminStore'
+import { useAdminStore } from '../../../store/useAdminStore'
 import './DebugOverlay.css'
 
 export default function DebugOverlay() {
   const { debugSettings, spawnConfig, rarityWeights, catchConfig, encounterPhysics, creatures } = useAdminStore()
 
   const activeSections = Object.entries(debugSettings)
-    .filter(([_, enabled]) => enabled)
+    .filter(([, enabled]) => enabled)
     .map(([key]) => key)
 
   if (activeSections.length === 0) return null

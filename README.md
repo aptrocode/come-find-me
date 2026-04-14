@@ -1,8 +1,8 @@
-# 🎮 First See Me — Pokemon GO-like Web Game
+# 🎮 First See Mie — Pokemon GO-like Web Game
 
-**First See Me** is a location-based mobile-first web game that brings the Pokémon GO experience to the browser. Explore your real-world surroundings, discover unique creatures, and capture them to build your collection.
+**First See Mie** is a location-based mobile-first web game that brings the Pokémon GO experience to the browser. Explore your real-world surroundings, discover unique creatures, and capture them to build your collection.
 
-![Project Preview](https://via.placeholder.com/800x450.png?text=First+See+Me+Game+Map) *<!-- Note: This is a placeholder, actual screenshots can be added later -->*
+![Project Preview](https://via.placeholder.com/800x450.png?text=First+See+Me+Game+Map) _<!-- Note: This is a placeholder, actual screenshots can be added later -->_
 
 ## ✨ Features
 
@@ -33,18 +33,21 @@
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd first-see-me
    ```
 
 2. Install dependencies:
+
    ```bash
    bun install
    ```
 
 3. Configure environment:
    Create a `.env` file in the root directory and add your Mapbox token:
+
    ```env
    VITE_MAPBOX_TOKEN=your_mapbox_token_here
    ```
@@ -59,20 +62,21 @@
 
 ```text
 src/
-├── components/          # React components (Map, HUD, Encounter, etc.)
-│   ├── Admin/           # Admin configuration dashboard
-│   ├── Encounter/       # 3D capture mechanics and models
-│   ├── Map/             # Mapbox implementation and markers
-│   └── HUD/             # Heads-up display and navigation
+├── components/          # Atomic Design components
+│   ├── atoms/           # Basic 3D models and base UI
+│   ├── molecules/       # UI groups (HUD, Debug, Loading, UI)
+│   └── organism/        # Full screens (Map, Encounter, Admin, Inventory, Profile)
 ├── store/               # Zustand state management (Game & Admin)
-├── hooks/               # Custom hooks (Geolocation, Spawn logic)
-├── config/              # Static game configurations
+├── hooks/               # Custom hooks (Geolocation, Spawn logic, Mapbox)
+├── utils/               # Helper functions (Geo, math)
+├── types/               # TypeScript interfaces and types
 └── public/              # Static assets and 3D models
 ```
 
 ## ⚙️ Administration
 
 The game includes a powerful Admin Panel at `/admin`. This panel allows developers to:
+
 - Modify creature statistics and rarity in real-time.
 - Adjust spawn radii and intervals.
 - Tweak catch rates and XP rewards.

@@ -1,14 +1,14 @@
 import { useRef, useEffect, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useGeolocation } from "../../hooks/useGeolocation";
-import { useMapbox } from "../../hooks/useMapbox";
-import { useSpawnManager } from "../../hooks/useSpawnManager";
-import { useGameStore } from "../../store/useGameStore";
-import { isWithinRange } from "../../utils/geo";
-import { ENCOUNTER_RANGE, MAP_UPDATE_THROTTLE } from "../../config/constants";
-import type { SpawnPoint } from "../../types";
-import LoadingScreen from "../UI/LoadingScreen";
+import { useGeolocation } from "../../../hooks/useGeolocation";
+import { useMapbox } from "../../../hooks/useMapbox";
+import { useSpawnManager } from "../../../hooks/useSpawnManager";
+import { useGameStore } from "../../../store/useGameStore";
+import { isWithinRange } from "../../../utils/geo";
+import { ENCOUNTER_RANGE, MAP_UPDATE_THROTTLE } from "../../../config/constants";
+import type { SpawnPoint } from "../../../types";
+import LoadingScreen from "../../molecules/UI/LoadingScreen";
 
 export default function GameMap() {
   const containerRef = useRef<HTMLDivElement>(null);

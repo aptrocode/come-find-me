@@ -16,7 +16,7 @@ export default function LoadingScreen({ message, isError }: Props) {
           </div>
         )}
         {isError && <div className="error-icon">⚠️</div>}
-        <h2 className="loading-title">{isError ? 'Oops!' : 'First See Me'}</h2>
+        <h2 className="loading-title">{isError ? 'Oops!' : 'First See Mie'}</h2>
         <p className="loading-message">{message}</p>
       </div>
     </div>

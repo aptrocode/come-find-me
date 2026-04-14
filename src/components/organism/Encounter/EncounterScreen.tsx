@@ -4,11 +4,11 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useDrag } from '@use-gesture/react'
 import { ContactShadows, Center } from '@react-three/drei'
 import * as THREE from 'three'
-import { useGameStore } from '../../store/useGameStore'
-import { useAdminStore } from '../../store/useAdminStore'
-import CreatureModel from './CreatureModel'
-import type { CreatureBounds } from './CreatureModel'
-import BallModel from './BallModel'
+import { useGameStore } from '../../../store/useGameStore'
+import { useAdminStore } from '../../../store/useAdminStore'
+import CreatureModel from '../../atoms/CreatureModel'
+import type { CreatureBounds } from '../../atoms/CreatureModel'
+import BallModel from '../../atoms/BallModel'
 import './EncounterScreen.css'
 
 // ─── Constants for the throw arc ──────────────────────────────────
@@ -106,10 +106,10 @@ interface ThrowBallProps {
   onHit: () => void
   onMiss: () => void
   creatureBounds: React.RefObject<CreatureBounds | null>
-  ballInFlight: React.MutableRefObject<boolean>
+  ballInFlightRef: React.RefObject<boolean>
 }
 
-function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlight }: ThrowBallProps) {
+function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: ThrowBallProps) {
   const groupRef = useRef<THREE.Group>(null)
   const phase = useRef<BallPhase>('idle')
   const velocity = useRef({ x: 0, y: 0, z: 0 })
@@ -173,7 +173,7 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlight }: Thr
 
       // Keep position where it is (don't reset to center!)
       phase.current = 'thrown'
-      ballInFlight.current = true
+      ballInFlightRef.current = true
       resolved.current = false
       spin.current = 0
       bounceCount.current = 0
@@ -216,7 +216,7 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlight }: Thr
       spin.current = 0
       bounceCount.current = 0
       flightTime.current = 0
-      ballInFlight.current = false
+      ballInFlightRef.current = false
     } else if (phase.current === 'thrown') {
       flightTime.current += dt
 
@@ -415,10 +415,11 @@ export default function EncounterScreen() {
     }
   }, [encounterResult, handleTryAgain])
 
+  const { encounterPhysics } = useAdminStore()
+  
   if (!activeEncounter) return null
 
   const { creature, cp } = activeEncounter
-  const { encounterPhysics } = useAdminStore()
   const rarityLabel = creature.rarity.charAt(0).toUpperCase() + creature.rarity.slice(1)
   const isTransitioning = encounterPhase !== 'active'
   const modelUrl = creature.modelUrl || '/models/bikini-girl.glb'
@@ -472,7 +473,7 @@ export default function EncounterScreen() {
                     onHit={handleHit}
                     onMiss={handleMiss}
                     creatureBounds={creatureBoundsRef}
-                    ballInFlight={ballInFlightRef}
+                    ballInFlightRef={ballInFlightRef}
                   />
                 )}
               </Suspense>

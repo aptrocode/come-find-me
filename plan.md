@@ -1,4 +1,4 @@
-# 🎮 First See Me — Pokemon GO-like Web Game
+# 🎮 First See Mie — Pokemon GO-like Web Game
 
 ## Ringkasan Proyek
 
@@ -8,16 +8,16 @@ Web-based location game mirip Pokemon GO. Player membuka browser → muncul peta
 
 ## Tech Stack
 
-| Layer | Teknologi |
-|-------|-----------|
-| Framework | React 19 + TypeScript (sudah ada) |
-| Build Tool | Vite 8 (sudah ada) |
-| Peta | **Mapbox GL JS v3.x** (npm: `mapbox-gl`) |
-| State Management | **Zustand** (ringan, minimal boilerplate) |
-| Geolocation | Browser Geolocation API (watchPosition) |
-| Asset | Dummy sprites via CSS / SVG / emoji (tanpa 3D berat) |
-| Storage | LocalStorage (save progress, inventory) |
-| Deployment | Vite build → static hosting |
+| Layer            | Teknologi                                            |
+| ---------------- | ---------------------------------------------------- |
+| Framework        | React 19 + TypeScript (sudah ada)                    |
+| Build Tool       | Vite 8 (sudah ada)                                   |
+| Peta             | **Mapbox GL JS v3.x** (npm: `mapbox-gl`)             |
+| State Management | **Zustand** (ringan, minimal boilerplate)            |
+| Geolocation      | Browser Geolocation API (watchPosition)              |
+| Asset            | Dummy sprites via CSS / SVG / emoji (tanpa 3D berat) |
+| Storage          | LocalStorage (save progress, inventory)              |
+| Deployment       | Vite build → static hosting                          |
 
 ---
 
@@ -81,9 +81,11 @@ src/
 ## Fase Implementasi
 
 ### Fase 1: Foundation & Map Setup
+
 > Map fullscreen + player marker bergerak real-time
 
 **Tasks:**
+
 - [ ] Install `mapbox-gl` + `@types/mapbox-gl`
 - [ ] Buat `config/mapbox.ts` — simpan access token + default map style
 - [ ] Buat `hooks/useGeolocation.ts` — wrapper `navigator.geolocation.watchPosition` dengan error handling & high accuracy
@@ -94,6 +96,7 @@ src/
 - [ ] Setup global CSS: fullscreen layout, dark theme, mobile-first
 
 **Catatan Optimasi:**
+
 - Gunakan `mapbox://styles/mapbox/dark-v11` untuk nuansa game
 - `watchPosition` dengan `enableHighAccuracy: true`, `maximumAge: 2000`
 - Map: disable rotation & pitch untuk performa mobile, enable kembali jika perlu
@@ -102,9 +105,11 @@ src/
 ---
 
 ### Fase 2: Creature Spawn System
+
 > Monster muncul di sekitar player berdasarkan lokasi
 
 **Tasks:**
+
 - [ ] Buat `types/index.ts` — define `Creature`, `SpawnPoint`, `PlayerState`, `Position`
 - [ ] Buat `config/creatures.ts` — daftar 10-15 dummy creatures (nama, tipe, rarity, emoji/icon, stats)
 - [ ] Buat `config/constants.ts` — spawn radius (50-200m), max active spawns (8), spawn interval (15s), despawn time (5min)
@@ -119,6 +124,7 @@ src/
 - [ ] Render creature markers di `GameMap.tsx`
 
 **Catatan Optimasi:**
+
 - Spawn logic di `requestIdleCallback` atau throttled interval
 - Marker menggunakan HTML overlay (Mapbox `Marker` class), bukan canvas layer — lebih fleksibel untuk animasi CSS
 - Creature data minimal di memory, no image preloading sampai encounter
@@ -127,9 +133,11 @@ src/
 ---
 
 ### Fase 3: HUD & Game UI
+
 > UI overlay di atas peta: status bar, navigasi, info
 
 **Tasks:**
+
 - [ ] Buat `store/useGameStore.ts` — Zustand store: player info, inventory, active encounter
 - [ ] Buat `components/HUD/TopBar.tsx` — player name, level, XP bar
 - [ ] Buat `components/HUD/BottomNav.tsx` — tab navigation (Map / Inventory / Profile)
@@ -139,6 +147,7 @@ src/
 - [ ] Tambah proximity indicator — jika creature dekat, UI feedback (pulse, glow border)
 
 **Design Notes:**
+
 - UI harus semi-transparent / glassmorphism agar peta tetap terlihat
 - Gunakan `backdrop-filter: blur()` untuk glass effect
 - Z-index management: Map (0) → Creature markers (10) → HUD (100) → Modal (200)
@@ -147,9 +156,11 @@ src/
 ---
 
 ### Fase 4: Encounter & Catch System
+
 > Tap creature → encounter screen → catch mechanic
 
 **Tasks:**
+
 - [ ] Buat `components/Encounter/EncounterScreen.tsx`:
   - Fullscreen overlay
   - Creature display (besar, animasi idle)
@@ -164,6 +175,7 @@ src/
 - [ ] Auto-save setiap catch / event penting
 
 **Catch Mechanic (Simple):**
+
 ```
 catchRate = baseCatchRate(rarity) - (creatureLevel * 0.02)
 roll = Math.random()
@@ -175,9 +187,11 @@ else → MISSED (bisa coba lagi)
 ---
 
 ### Fase 5: Inventory & Collection
+
 > Lihat dan kelola creature yang sudah ditangkap
 
 **Tasks:**
+
 - [ ] Buat `components/Inventory/InventoryScreen.tsx` — grid/list semua creature
 - [ ] Buat `components/Inventory/CreatureEntry.tsx` — card per creature (nama, tipe, CP, waktu tangkap)
 - [ ] Filter & sort (by tipe, rarity, waktu)
@@ -188,9 +202,11 @@ else → MISSED (bisa coba lagi)
 ---
 
 ### Fase 6: Polish & Optimization
+
 > Final touches untuk experience premium
 
 **Tasks:**
+
 - [ ] Tambah sound effects (optional, Web Audio API)
 - [ ] Haptic feedback via `navigator.vibrate()` saat catch
 - [ ] Smooth transitions antar screen
@@ -210,47 +226,47 @@ else → MISSED (bisa coba lagi)
 
 ```typescript
 interface Position {
-  lat: number
-  lng: number
-  accuracy?: number
-  timestamp: number
+  lat: number;
+  lng: number;
+  accuracy?: number;
+  timestamp: number;
 }
 
 interface Creature {
-  id: string
-  name: string
-  type: 'fire' | 'water' | 'grass' | 'electric' | 'dark' | 'normal'
-  rarity: 'common' | 'uncommon' | 'rare' | 'legendary'
-  emoji: string           // Dummy visual
-  baseCatchRate: number   // 0.0 - 1.0
-  baseCP: number          // Base combat power
-  description: string
+  id: string;
+  name: string;
+  type: "fire" | "water" | "grass" | "electric" | "dark" | "normal";
+  rarity: "common" | "uncommon" | "rare" | "legendary";
+  emoji: string; // Dummy visual
+  baseCatchRate: number; // 0.0 - 1.0
+  baseCP: number; // Base combat power
+  description: string;
 }
 
 interface SpawnPoint {
-  id: string
-  creature: Creature
-  position: Position
-  spawnedAt: number       // timestamp
-  expiresAt: number       // timestamp
-  cp: number              // Rolled CP for this instance
+  id: string;
+  creature: Creature;
+  position: Position;
+  spawnedAt: number; // timestamp
+  expiresAt: number; // timestamp
+  cp: number; // Rolled CP for this instance
 }
 
 interface CaughtCreature {
-  id: string
-  creature: Creature
-  cp: number
-  caughtAt: number
-  caughtLocation: Position
+  id: string;
+  creature: Creature;
+  cp: number;
+  caughtAt: number;
+  caughtLocation: Position;
 }
 
 interface PlayerState {
-  name: string
-  level: number
-  xp: number
-  inventory: CaughtCreature[]
-  totalCaught: number
-  totalSeen: number
+  name: string;
+  level: number;
+  xp: number;
+  inventory: CaughtCreature[];
+  totalCaught: number;
+  totalSeen: number;
 }
 ```
 
@@ -258,35 +274,38 @@ interface PlayerState {
 
 ## Dummy Creature List (Contoh)
 
-| Nama | Tipe | Rarity | Emoji | Base Catch Rate |
-|------|------|--------|-------|-----------------|
-| Flamepup | Fire | Common | 🔥 | 0.70 |
-| Aquafin | Water | Common | 🐟 | 0.70 |
-| Leafling | Grass | Common | 🌿 | 0.70 |
-| Voltkit | Electric | Uncommon | ⚡ | 0.50 |
-| Shadowmew | Dark | Uncommon | 🌑 | 0.50 |
-| Blazewolf | Fire | Rare | 🐺 | 0.30 |
-| Tideclaw | Water | Rare | 🦀 | 0.30 |
-| Thornvine | Grass | Rare | 🌹 | 0.30 |
-| Stormdrake | Electric | Legendary | 🐉 | 0.10 |
-| Voidreaper | Dark | Legendary | 👻 | 0.10 |
+| Nama       | Tipe     | Rarity    | Emoji | Base Catch Rate |
+| ---------- | -------- | --------- | ----- | --------------- |
+| Flamepup   | Fire     | Common    | 🔥    | 0.70            |
+| Aquafin    | Water    | Common    | 🐟    | 0.70            |
+| Leafling   | Grass    | Common    | 🌿    | 0.70            |
+| Voltkit    | Electric | Uncommon  | ⚡    | 0.50            |
+| Shadowmew  | Dark     | Uncommon  | 🌑    | 0.50            |
+| Blazewolf  | Fire     | Rare      | 🐺    | 0.30            |
+| Tideclaw   | Water    | Rare      | 🦀    | 0.30            |
+| Thornvine  | Grass    | Rare      | 🌹    | 0.30            |
+| Stormdrake | Electric | Legendary | 🐉    | 0.10            |
+| Voidreaper | Dark     | Legendary | 👻    | 0.10            |
 
 ---
 
 ## Optimasi Web (Penting!)
 
 ### Bundle & Loading
+
 - **Code splitting**: Lazy load `EncounterScreen` dan `InventoryScreen` (React.lazy + Suspense)
 - **Mapbox GL JS**: ~200KB gzipped — load sekali, cache browser
 - **Tree shaking**: import hanya yang dibutuhkan
 - **Preload**: CSS & font di `<head>`
 
 ### Geolocation
+
 - `watchPosition` dengan `maximumAge: 3000ms` untuk hemat battery
 - Throttle map updates ke max 1x per detik
 - Fallback ke `getCurrentPosition` jika watch gagal
 
 ### Rendering
+
 - Batasi creature markers on-screen (max 8-10)
 - Gunakan `will-change: transform` pada elemen yang sering bergerak
 - CSS animations > JS animations (GPU accelerated)
@@ -294,11 +313,13 @@ interface PlayerState {
 - Avoid re-render map saat HUD update (isolasi state)
 
 ### Memory
+
 - Cleanup spawns yang expired
 - Dispose Mapbox markers yang di-remove
 - LocalStorage max 5MB — compress inventory jika perlu
 
 ### Mobile
+
 - `touch-action: manipulation` — no double-tap zoom delay
 - Viewport meta: `width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no`
 - Full-height: `100dvh` (dynamic viewport height)
@@ -310,14 +331,14 @@ interface PlayerState {
 ```typescript
 // config/mapbox.ts
 export const MAPBOX_CONFIG = {
-  accessToken: 'YOUR_MAPBOX_ACCESS_TOKEN', // Perlu diisi
-  style: 'mapbox://styles/mapbox/dark-v11',
-  defaultZoom: 17,      // Street-level zoom untuk game
+  accessToken: "YOUR_MAPBOX_ACCESS_TOKEN", // Perlu diisi
+  style: "mapbox://styles/mapbox/dark-v11",
+  defaultZoom: 17, // Street-level zoom untuk game
   maxZoom: 19,
   minZoom: 14,
-  pitchEnabled: false,   // Disable 3D tilt untuk performa
-  rotateEnabled: false,  // Disable rotasi untuk konsistensi
-}
+  pitchEnabled: false, // Disable 3D tilt untuk performa
+  rotateEnabled: false, // Disable rotasi untuk konsistensi
+};
 ```
 
 ---

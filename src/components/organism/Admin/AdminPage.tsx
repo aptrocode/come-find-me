@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import { Icon } from '@iconify/react'
-import { useAdminStore } from '../../store/useAdminStore'
-import type { Creature, CreatureType, Rarity } from '../../types'
+import { useAdminStore } from '../../../store/useAdminStore'
+import type { Creature, CreatureType, Rarity } from '../../../types'
 import './AdminPage.css'
 
 type AdminTab = 'creatures' | 'spawn' | 'rarity' | 'catch' | 'physics'

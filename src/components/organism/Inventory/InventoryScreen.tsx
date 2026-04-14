@@ -1,4 +1,4 @@
-import { useGameStore } from '../../store/useGameStore'
+import { useGameStore } from '../../../store/useGameStore'
 import { Icon } from '@iconify/react'
 import './InventoryScreen.css'
 

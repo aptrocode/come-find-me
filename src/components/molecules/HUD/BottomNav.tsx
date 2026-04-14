@@ -1,6 +1,6 @@
-import { useGameStore } from '../../store/useGameStore'
+import { useGameStore } from '../../../store/useGameStore'
 import { Icon } from '@iconify/react'
-import type { GameScreen } from '../../types'
+import type { GameScreen } from '../../../types'
 import './BottomNav.css'
 
 const tabs: { id: GameScreen; icon: string; label: string }[] = [
