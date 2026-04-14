@@ -1,4 +1,5 @@
 import { useGameStore } from '../../store/useGameStore'
+import { Icon } from '@iconify/react'
 import './InventoryScreen.css'
 
 export default function InventoryScreen() {
@@ -18,7 +19,7 @@ export default function InventoryScreen() {
 
       {inventory.length === 0 ? (
         <div className="inventory-empty">
-          <div className="empty-icon">🎒</div>
+          <Icon icon="ph:bag-simple-duotone" className="empty-icon-glyph" />
           <p className="empty-text">No creatures yet!</p>
           <p className="empty-sub">Explore the map and catch some.</p>
         </div>

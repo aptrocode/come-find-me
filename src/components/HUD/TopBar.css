@@ -23,14 +23,17 @@
 }
 
 .player-avatar {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: linear-gradient(135deg, #4ECDC4, #44A08D);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.6rem;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 10px rgba(78, 205, 196, 0.3);
 }
 
 .player-info {
@@ -98,7 +101,9 @@
 }
 
 .catch-icon {
-  font-size: 0.85rem;
+  font-size: 1.1rem;
+  color: #4ECDC4;
+  filter: drop-shadow(0 0 5px rgba(78, 205, 196, 0.4));
 }
 
 .catch-num {

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
+import { Icon } from '@iconify/react'
 import { useAdminStore } from '../../store/useAdminStore'
 import type { Creature, CreatureType, Rarity } from '../../types'
 import './AdminPage.css'
@@ -68,8 +69,13 @@ function CreatureEditor({ creature, onSave, onClose }: CreatureEditorProps) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>{isNew ? '✨ New Creature' : `✏️ Edit ${creature?.name}`}</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <h3>
+            <Icon icon={isNew ? "ph:sparkle-duotone" : "ph:pencil-duotone"} className="modal-header-icon" />
+            {isNew ? 'New Creature' : `Edit ${creature?.name}`}
+          </h3>
+          <button className="modal-close" onClick={onClose}>
+            <Icon icon="ph:x-bold" />
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="creature-form">
@@ -191,7 +197,8 @@ function CreatureEditor({ creature, onSave, onClose }: CreatureEditorProps) {
           <div className="form-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn-primary">
-              {isNew ? '➕ Add Creature' : '💾 Save Changes'}
+              <Icon icon={isNew ? "ph:plus-bold" : "ph:floppy-disk-back-duotone"} />
+              {isNew ? 'Add Creature' : 'Save Changes'}
             </button>
           </div>
         </form>
@@ -287,11 +294,11 @@ export default function AdminPage() {
   }, [adminStore, localSpawnConfig, localRarityWeights, localCatchConfig, localEncounterPhysics, localDebugSettings])
 
   const tabs: { id: AdminTab; icon: string; label: string }[] = [
-    { id: 'creatures', icon: '🐾', label: 'Creatures' },
-    { id: 'spawn', icon: '⚙️', label: 'Spawn' },
-    { id: 'rarity', icon: '🎲', label: 'Rarity' },
-    { id: 'catch', icon: '🎯', label: 'Catch' },
-    { id: 'physics', icon: '⚛️', label: 'Physics' },
+    { id: 'creatures', icon: 'ph:paw-print-duotone', label: 'Creatures' },
+    { id: 'spawn', icon: 'ph:map-pin-area-duotone', label: 'Spawn' },
+    { id: 'rarity', icon: 'ph:dice-five-duotone', label: 'Rarity' },
+    { id: 'catch', icon: 'ph:target-duotone', label: 'Catch' },
+    { id: 'physics', icon: 'ph:atom-duotone', label: 'Physics' },
   ]
 
 
@@ -299,11 +306,23 @@ export default function AdminPage() {
     <div className="admin-page">
       {/* Top Header */}
       <div className="admin-header">
-        <a className="admin-back" href="/">← Play Game</a>
-        <h1 className="admin-title">⚙️ Admin Panel</h1>
+        <a className="admin-back" href="/">
+          <Icon icon="ph:arrow-left-bold" />
+          <span>Play Game</span>
+        </a>
+        <h1 className="admin-title">
+          <Icon icon="ph:gear-duotone" className="admin-title-icon" />
+          Admin Panel
+        </h1>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="admin-reset" onClick={handleReset} style={{ background: '#e74c3c' }}>🔄 Reset All</button>
-          <button className="admin-apply btn-primary" onClick={handleApplyChanges}>💾 Save & Apply</button>
+          <button className="admin-reset" onClick={handleReset}>
+            <Icon icon="ph:arrows-counter-clockwise-bold" />
+            Reset All
+          </button>
+          <button className="admin-apply btn-primary" onClick={handleApplyChanges}>
+            <Icon icon="ph:floppy-disk-back-duotone" />
+            Save & Apply
+          </button>
         </div>
       </div>
 
@@ -315,7 +334,7 @@ export default function AdminPage() {
             className={`admin-tab ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
-            <span className="admin-tab-icon">{tab.icon}</span>
+            <Icon icon={tab.icon} className="admin-tab-icon" />
             <span className="admin-tab-label">{tab.label}</span>
           </button>
         ))}
@@ -339,10 +358,12 @@ export default function AdminPage() {
                   <span className="debug-label">Log Mode</span>
                 </label>
                 <button className="btn-secondary btn-mini" onClick={() => handleResetSection('creatures')}>
-                  🔄 Reset Registry
+                  <Icon icon="ph:arrows-counter-clockwise-bold" />
+                  Reset Registry
                 </button>
                 <button className="btn-add btn-sm" onClick={() => setEditingCreature('new')}>
-                  ✨ Add New
+                  <Icon icon="ph:plus-bold" />
+                  Add New
                 </button>
               </div>
             </div>
@@ -370,15 +391,19 @@ export default function AdminPage() {
                     <span className="stat-badge">{Math.round(c.baseCatchRate * 100)}%</span>
                   </div>
                   <div className="creature-card-actions">
-                    <button className="card-btn edit" onClick={() => setEditingCreature(c)}>✏️</button>
-                    <button className="card-btn delete" onClick={() => handleDeleteCreature(c.id)}>🗑️</button>
+                    <button className="card-btn edit" onClick={() => setEditingCreature(c)}>
+                      <Icon icon="ph:pencil-duotone" />
+                    </button>
+                    <button className="card-btn delete" onClick={() => handleDeleteCreature(c.id)}>
+                      <Icon icon="ph:trash-duotone" />
+                    </button>
                   </div>
                 </div>
               ))}
 
               {adminStore.creatures.length === 0 && (
                 <div className="empty-state">
-                  <span>🌀</span>
+                  <Icon icon="ph:wind-duotone" className="empty-icon" />
                   <p>No creatures yet. Add your first one!</p>
                 </div>
               )}
@@ -401,7 +426,8 @@ export default function AdminPage() {
                   <span className="debug-label">Log Mode</span>
                 </label>
                 <button className="btn-secondary btn-mini" onClick={() => handleResetSection('spawn')}>
-                  🔄 Reset Defaults
+                  <Icon icon="ph:arrows-counter-clockwise-bold" />
+                  Reset Defaults
                 </button>
               </div>
             </div>
@@ -525,7 +551,8 @@ export default function AdminPage() {
                   <span className="debug-label">Log Mode</span>
                 </label>
                 <button className="btn-secondary btn-mini" onClick={() => handleResetSection('rarity')}>
-                  🔄 Reset Defaults
+                  <Icon icon="ph:arrows-counter-clockwise-bold" />
+                  Reset Defaults
                 </button>
               </div>
             </div>
@@ -586,7 +613,8 @@ export default function AdminPage() {
                   <span className="debug-label">Log Mode</span>
                 </label>
                 <button className="btn-secondary btn-mini" onClick={() => handleResetSection('catch')}>
-                  🔄 Reset Defaults
+                  <Icon icon="ph:arrows-counter-clockwise-bold" />
+                  Reset Defaults
                 </button>
               </div>
             </div>
@@ -670,7 +698,8 @@ export default function AdminPage() {
                   <span className="debug-label">Log Mode</span>
                 </label>
                 <button className="btn-secondary btn-mini" onClick={() => handleResetSection('physics')}>
-                  🔄 Reset Defaults
+                  <Icon icon="ph:arrows-counter-clockwise-bold" />
+                  Reset Defaults
                 </button>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { useGameStore } from '../../store/useGameStore'
+import { Icon } from '@iconify/react'
 import './TopBar.css'
 
 export default function TopBar() {
@@ -8,7 +9,9 @@ export default function TopBar() {
   return (
     <div className="top-bar">
       <div className="top-bar-left">
-        <div className="player-avatar">👤</div>
+        <div className="player-avatar">
+          <Icon icon="ph:user-circle-duotone" />
+        </div>
         <div className="player-info">
           <span className="player-name">{name}</span>
           <span className="player-level">Lv. {level}</span>
@@ -22,7 +25,7 @@ export default function TopBar() {
       </div>
       <div className="top-bar-right">
         <div className="catch-count">
-          <span className="catch-icon">🎯</span>
+          <Icon icon="ph:target-duotone" className="catch-icon" />
           <span className="catch-num">{totalCaught}</span>
         </div>
       </div>

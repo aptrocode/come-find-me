@@ -1,4 +1,5 @@
 import { useEffect, lazy, Suspense } from 'react'
+import { Icon } from '@iconify/react'
 import GameMap from './components/Map/GameMap'
 import TopBar from './components/HUD/TopBar'
 import BottomNav from './components/HUD/BottomNav'
@@ -56,7 +57,9 @@ function ProfileScreen() {
 
   return (
     <div className="profile-screen">
-      <div className="profile-avatar-lg">👤</div>
+      <div className="profile-avatar-lg">
+        <Icon icon="ph:user-circle-duotone" />
+      </div>
       <h1 className="profile-name">{player.name}</h1>
       <div className="profile-level-badge">Level {player.level}</div>
 
