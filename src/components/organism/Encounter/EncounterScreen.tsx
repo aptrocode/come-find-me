@@ -25,10 +25,20 @@ const FALLBACK_HIT_HALF_H = 0.8
 const FALLBACK_HIT_HALF_D = 0.3
 
 const GRAVITY = 9.8          // Realistic gravity for natural arc
-const SPIN_SPEED = 10.0
+const SPIN_SPEED_MIN = 4.0   // Spin for gentle throws
+const SPIN_SPEED_MAX = 14.0  // Spin for max power throws
 
-const OOB_Z_MIN = -6
-const OOB_X_MAX = 5
+const OOB_Z_MIN = -8         // Out-of-bounds behind creature
+const OOB_X_MAX = 6          // Out-of-bounds left/right
+const OOB_Y_MAX = 8          // Out-of-bounds above
+
+// Power thresholds — swipe velocity (px/ms) mapped to 0..1 power
+const MIN_SWIPE_SPEED = 0.15  // Below this = minimum power throw
+const MAX_SWIPE_SPEED = 2.5   // Above this = max power (capped)
+
+// Throw velocity limits (world units/s)
+const THROW_SPEED_MIN = 5.0   // Gentle lob
+const THROW_SPEED_MAX = 22.0  // Hard throw, capped here to prevent overpower
 
 // ─── Error Boundary ───────────────────────────────────────────────
 interface ErrorBoundaryProps {
@@ -91,16 +101,19 @@ interface GestureData {
   // drag offset in pixels
   mx: number
   my: number
-  // throw velocity (pixels/ms)
+  // final swipe movement in pixels (used for direction)
+  swipeMx: number
+  swipeMy: number
+  // throw velocity (pixels/ms) — used for power
   vx: number
   vy: number
-  // throw direction
-  dx: number
   // sequence counter to trigger new throws
   seq: number
 }
 
 // ─── ThrowBall (inside Canvas) ────────────────────────────────────
+// The ball goes WHERE you swipe. You must aim at the creature.
+// Swipe speed determines power (how far/fast the ball travels).
 interface ThrowBallProps {
   gesture: GestureData
   onHit: () => void
@@ -116,10 +129,11 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
   const pos = useRef({ x: BALL_START_POS[0], y: BALL_START_POS[1], z: BALL_START_POS[2] })
   const scale = useRef(BALL_START_SCALE)
   const spin = useRef(0)
+  const spinSpeed = useRef(SPIN_SPEED_MIN)
   const resolved = useRef(false)
   const bounceCount = useRef(0)
   const lastSeq = useRef(-1)
-  const flightTime = useRef(0) // Track how long ball has been in the air
+  const flightTime = useRef(0)
 
   const { encounterPhysics } = useAdminStore()
   const { camera, size } = useThree()
@@ -132,46 +146,52 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
     if (gesture.seq !== lastSeq.current && gesture.phase === 'thrown') {
       lastSeq.current = gesture.seq
 
-      // Swipe power from gesture
-      const speed = Math.sqrt(gesture.vx * gesture.vx + gesture.vy * gesture.vy)
-      const clampedSpeed = Math.min(Math.max(speed, 0.3), 3.0)
-      const power = clampedSpeed * encounterPhysics.throwMultiplier
+      // ── Power from swipe speed ──
+      const rawSpeed = Math.sqrt(gesture.vx * gesture.vx + gesture.vy * gesture.vy)
+      const normalizedPower = Math.min(
+        Math.max((rawSpeed - MIN_SWIPE_SPEED) / (MAX_SWIPE_SPEED - MIN_SWIPE_SPEED), 0),
+        1
+      )
+      const power = Math.min(normalizedPower * encounterPhysics.throwMultiplier, 1.0)
 
-      // ── Pokemon GO-style: launch from CURRENT position (wherever the ball was dragged) ──
-      const launchX = pos.current.x
-      const launchY = pos.current.y
-      const launchZ = pos.current.z
+      // ── Direction from swipe movement ──
+      // Convert 2D screen swipe direction to 3D world direction:
+      //   - Horizontal swipe (swipeMx) → X direction
+      //   - Vertical swipe up (swipeMy negative) → Into the screen (Z) + upward (Y)
+      const swipeLen = Math.sqrt(gesture.swipeMx * gesture.swipeMx + gesture.swipeMy * gesture.swipeMy)
+      // Normalized 2D swipe direction
+      const ndx = swipeLen > 1 ? gesture.swipeMx / swipeLen : 0
+      const ndy = swipeLen > 1 ? gesture.swipeMy / swipeLen : -1 // Default to straight up
 
-      // Target position (creature center)
-      const targetX = 0
-      const targetY = CREATURE_Y
-      const targetZ = CREATURE_Z
+      // Map 2D swipe to 3D launch direction:
+      //   Screen-X → World-X (left/right)
+      //   Screen-Y (up) → World-Z (into screen, negative) + World-Y (upward arc)
+      const upComponent = Math.max(-ndy, 0) // How much of the swipe is "up" (0..1)
+      
+      // 3D direction: X from horizontal swipe, Z from vertical swipe, Y gets arc
+      const dirX = ndx * 0.5   // Horizontal aim sensitivity
+      const dirZ = -(0.3 + upComponent * 0.7) // Strong forward push into scene
+      const dirY = 0.15 + upComponent * 0.1 // Subtle upward arc, gravity handles the rest
 
-      // Distance to travel from current position
-      const dz = targetZ - launchZ
-      const dy = targetY - launchY
-      const dx = targetX - launchX
+      // Normalize the 3D direction
+      const dirLen = Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ)
+      const normDirX = dirLen > 0 ? dirX / dirLen : 0
+      const normDirY = dirLen > 0 ? dirY / dirLen : 0.3
+      const normDirZ = dirLen > 0 ? dirZ / dirLen : -1
 
-      // Flight duration: shorter for strong swipes, longer for weak
-      const tFlight = THREE.MathUtils.lerp(1.0, 0.4, Math.min(power, 1.0))
-
-      // Compute initial velocities using projectile motion:
-      //   position = start + v*t + 0.5*a*t²
-      //   v = (target - start - 0.5*a*t²) / t
-      const vz = dz / tFlight
-      const vy_initial = (dy + 0.5 * GRAVITY * tFlight * tFlight) / tFlight
-
-      // Horizontal: aim toward creature center + curve ball swerve from swipe direction
-      const swerve = gesture.dx * clampedSpeed * 0.8
-      const vx_initial = dx / tFlight + swerve
+      // Apply power to get final throw speed (world units/sec)
+      const throwSpeed = THREE.MathUtils.lerp(THROW_SPEED_MIN, THROW_SPEED_MAX, power)
 
       velocity.current = {
-        x: vx_initial,
-        y: vy_initial,
-        z: vz
+        x: normDirX * throwSpeed,
+        y: normDirY * throwSpeed + 1.5 + power * 1.5, // Mild arc boost, gravity does the rest
+        z: normDirZ * throwSpeed,
       }
 
-      // Keep position where it is (don't reset to center!)
+      // Spin scales with power
+      spinSpeed.current = THREE.MathUtils.lerp(SPIN_SPEED_MIN, SPIN_SPEED_MAX, power)
+
+      // Launch from current position (where ball was dragged to)
       phase.current = 'thrown'
       ballInFlightRef.current = true
       resolved.current = false
@@ -183,18 +203,13 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
     // ── Handle drag state ──
     if (gesture.phase === 'dragging' && phase.current !== 'thrown') {
       phase.current = 'dragging'
-      // Proper pixel-to-world conversion using camera projection math
-      // Distance from camera (z=5) to ball plane (z=1) = 4
       const distToBall = camera.position.z - BALL_START_POS[2]
       const fov = (camera as THREE.PerspectiveCamera).fov
       const halfFovRad = THREE.MathUtils.degToRad(fov / 2)
-      // World-space height visible at the ball's z-depth
       const worldHeight = 2 * distToBall * Math.tan(halfFovRad)
       const worldWidth = worldHeight * (size.width / size.height)
-      // Pixels to world units
       const pxToWorldX = worldWidth / size.width
       const pxToWorldY = worldHeight / size.height
-      // Apply drag multiplier as a fine-tune knob (normalized to default 0.015)
       const dragScale = encounterPhysics.dragMultiplier / 0.015
       pos.current.x = BALL_START_POS[0] + gesture.mx * pxToWorldX * dragScale
       pos.current.y = BALL_START_POS[1] + (-gesture.my) * pxToWorldY * dragScale
@@ -220,7 +235,7 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
     } else if (phase.current === 'thrown') {
       flightTime.current += dt
 
-      // Apply gravity to Y velocity
+      // Apply gravity
       velocity.current.y -= GRAVITY * dt
 
       // Update position
@@ -228,10 +243,10 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
       pos.current.y += velocity.current.y * dt
       pos.current.z += velocity.current.z * dt
 
-      // Spin animation (rolls forward + sideways based on swerve)
-      spin.current += SPIN_SPEED * dt
+      // Spin animation
+      spin.current += spinSpeed.current * dt
 
-      // Perspective scale: shrink as ball goes deeper into the scene
+      // Perspective scale: shrink as ball goes deeper
       const totalZ = BALL_START_POS[2] - CREATURE_Z
       const progress = Math.max(0, Math.min(1, (BALL_START_POS[2] - pos.current.z) / totalZ))
       scale.current = THREE.MathUtils.lerp(BALL_START_SCALE, BALL_MIN_SCALE, progress)
@@ -243,16 +258,13 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
       const hd = bounds ? bounds.halfDepth : FALLBACK_HIT_HALF_D
       const cY = bounds ? bounds.centerY : CREATURE_Y
 
-      // Check if ball is within the creature's z-depth range
       const inHitZone = pos.current.z <= CREATURE_Z + hd && pos.current.z >= CREATURE_Z - hd
       if (!resolved.current && inHitZone) {
-        // Box-based hit: check if ball x,y falls within creature's width & height
         const withinX = Math.abs(pos.current.x) <= hw
         const withinY = Math.abs(pos.current.y - cY) <= hh
 
         if (withinX && withinY) {
           resolved.current = true
-          // Snap ball to creature center for satisfying visual
           pos.current = { x: 0, y: cY, z: CREATURE_Z }
           groupRef.current.position.set(0, cY, CREATURE_Z)
           phase.current = 'idle'
@@ -260,10 +272,9 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
           return
         }
       }
-      // Mark as missed once ball flies past the hit zone
+      // Ball flew past creature without hitting
       if (!resolved.current && pos.current.z < CREATURE_Z - hd) {
         resolved.current = true
-        // Ball flew past creature without hitting — continue flying
       }
 
       // ── Ground bounce ──
@@ -271,9 +282,9 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
       if (pos.current.y <= groundY && velocity.current.y < 0) {
         if (bounceCount.current < 2) {
           pos.current.y = groundY
-          velocity.current.y = -velocity.current.y * 0.4 // Damped bounce
-          velocity.current.x *= 0.6 // Slow down laterally
-          velocity.current.z *= 0.7 // Slow forward too
+          velocity.current.y = -velocity.current.y * 0.4
+          velocity.current.x *= 0.6
+          velocity.current.z *= 0.7
           bounceCount.current++
         } else {
           phase.current = 'idle'
@@ -287,7 +298,8 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
       if (
         pos.current.z < OOB_Z_MIN ||
         Math.abs(pos.current.x) > OOB_X_MAX ||
-        flightTime.current > 3.0 // Safety timeout
+        pos.current.y > OOB_Y_MAX ||
+        flightTime.current > 3.0
       ) {
         phase.current = 'idle'
         if (!resolved.current) onMiss()
@@ -300,7 +312,6 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
     groupRef.current.position.set(pos.current.x, pos.current.y, pos.current.z)
     const s = scale.current
     groupRef.current.scale.set(s, s, s)
-    // Rolling spin that looks natural
     groupRef.current.rotation.set(spin.current * 0.7, spin.current * 0.2, spin.current * 0.5)
   })
 
@@ -335,7 +346,7 @@ export default function EncounterScreen() {
 
   // Gesture data shared between DOM layer and Canvas
   const [gesture, setGesture] = useState<GestureData>({
-    phase: 'idle', mx: 0, my: 0, vx: 0, vy: 0, dx: 0, seq: 0
+    phase: 'idle', mx: 0, my: 0, swipeMx: 0, swipeMy: 0, vx: 0, vy: 0, seq: 0
   })
   const seqRef = useRef(0)
 
@@ -350,13 +361,16 @@ export default function EncounterScreen() {
   const sceneReady = useMemo(() => encounterPhase === 'active', [encounterPhase])
 
   // ── Gesture handler (DOM layer) ──
-  const bind = useDrag(({ down, movement: [mx, my], velocity: [vx, vy], direction: [dx, dy] }) => {
-    if (encounterResult) return // Don't allow throwing during result display
-    if (ballInFlightRef.current) return // Block interaction while ball is in the air
+  // Passes both drag position (for visual ball following finger) and
+  // final swipe movement + velocity (for throw direction + power)
+  const bind = useDrag(({ down, movement: [mx, my], velocity: [vx, vy], direction: [, dy] }) => {
+    if (encounterResult) return
+    if (ballInFlightRef.current) return
 
     if (down) {
       setGesture(g => ({ ...g, phase: 'dragging', mx, my }))
     } else {
+      // Need upward swipe component to trigger throw
       const swipeUp = dy < 0 && Math.abs(my) > 20
 
       if (swipeUp) {
@@ -364,8 +378,9 @@ export default function EncounterScreen() {
         setGesture({
           phase: 'thrown',
           mx: 0, my: 0,
-          vx, vy,
-          dx,
+          swipeMx: mx,  // Pass final swipe position for direction
+          swipeMy: my,
+          vx, vy,       // Pass velocity for power
           seq: seqRef.current,
         })
       } else {
@@ -373,8 +388,8 @@ export default function EncounterScreen() {
       }
     }
   }, {
-    threshold: 0,           // Start tracking immediately
-    pointer: { touch: true }, // Ensure touch works
+    threshold: 0,
+    pointer: { touch: true },
   })
 
   const handleHit = useCallback(() => {
@@ -399,7 +414,7 @@ export default function EncounterScreen() {
 
   const handleTryAgain = useCallback(() => {
     setThrowKey((k) => k + 1)
-    setGesture({ phase: 'idle', mx: 0, my: 0, vx: 0, vy: 0, dx: 0, seq: seqRef.current })
+    setGesture({ phase: 'idle', mx: 0, my: 0, swipeMx: 0, swipeMy: 0, vx: 0, vy: 0, seq: seqRef.current })
     resetThrow()
   }, [resetThrow])
 
@@ -514,7 +529,7 @@ export default function EncounterScreen() {
             </div>
           </div>
 
-          {!encounterResult && (
+          {!encounterResult && gesture.phase === 'idle' && (
             <div className="encounter-prompt">
               Swipe to throw!
             </div>

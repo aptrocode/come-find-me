@@ -130,7 +130,7 @@
 /* Prompt */
 .encounter-prompt {
   position: absolute;
-  top: 55%;
+  bottom: 29%;
   left: 50%;
   transform: translateX(-50%);
   color: rgba(255, 255, 255, 0.5);
