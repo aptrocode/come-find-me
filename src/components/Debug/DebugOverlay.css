@@ -1,0 +1,55 @@
+.debug-overlay {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(78, 205, 196, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  width: 280px;
+  max-height: 80vh;
+  overflow-y: auto;
+  pointer-events: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.debug-header {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #4ECDC4;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.debug-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.debug-item-title {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 4px;
+}
+
+.debug-item pre {
+  margin: 0;
+  font-size: 0.65rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

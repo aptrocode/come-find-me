@@ -7,6 +7,7 @@ import { useDrag } from '@use-gesture/react'
 import type { FullGestureState } from '@use-gesture/react'
 import { ContactShadows, Center } from '@react-three/drei'
 import { useGameStore } from '../../store/useGameStore'
+import { useAdminStore } from '../../store/useAdminStore'
 import CreatureModel from './CreatureModel'
 import BallModel from './BallModel'
 import './EncounterScreen.css'
@@ -69,6 +70,7 @@ interface DraggableBallProps {
 }
 
 function DraggableBall({ onHit }: DraggableBallProps) {
+  const { encounterPhysics } = useAdminStore()
   const [isThrown, setIsThrown] = useState(false)
   const [{ position, scale }, api] = useSpring(() => ({
     position: [0, -1.1, 1] as [number, number, number],
@@ -80,19 +82,23 @@ function DraggableBall({ onHit }: DraggableBallProps) {
 
     if (down) {
       api.start({
-        position: [mx * 0.005, -1.1 - my * 0.005, 1] as [number, number, number],
+        position: [mx * encounterPhysics.dragMultiplier, -1.1 - my * encounterPhysics.dragMultiplier, 1] as [number, number, number],
         scale: [0.3, 0.3, 0.3] as [number, number, number],
       })
     } else {
-      if (my < -30) {
+      if (my < encounterPhysics.throwThreshold) {
         // Thrown upwards
         setIsThrown(true)
         api.start({
-          position: [mx * 0.01, -0.5, -3],
+          position: [mx * encounterPhysics.throwMultiplier, -0.5, -3],
           scale: [0.2, 0.2, 0.2] as [number, number, number],
-          config: { mass: 1, tension: 170, friction: 30 },
+          config: {
+            mass: encounterPhysics.mass,
+            tension: encounterPhysics.tension,
+            friction: encounterPhysics.friction
+          },
           onRest: () => {
-            if (Math.abs(mx) > 250) {
+            if (Math.abs(mx) > encounterPhysics.whiffThreshold) {
               // WHIFF
               setTimeout(() => {
                 api.start({

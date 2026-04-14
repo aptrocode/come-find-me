@@ -3,6 +3,7 @@ import GameMap from './components/Map/GameMap'
 import TopBar from './components/HUD/TopBar'
 import BottomNav from './components/HUD/BottomNav'
 import EncounterScreen from './components/Encounter/EncounterScreen'
+import DebugOverlay from './components/Debug/DebugOverlay'
 import { useGameStore } from './store/useGameStore'
 import { useAdminStore } from './store/useAdminStore'
 import './App.css'
@@ -28,6 +29,9 @@ function App() {
       {/* HUD Overlay */}
       <TopBar />
       <BottomNav />
+
+      {/* Debug Info Overlay */}
+      <DebugOverlay />
 
       {/* Screens */}
       {activeScreen === 'inventory' && (

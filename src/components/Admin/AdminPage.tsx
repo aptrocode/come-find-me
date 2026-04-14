@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useAdminStore } from '../../store/useAdminStore'
 import type { Creature, CreatureType, Rarity } from '../../types'
 import './AdminPage.css'
 
-type AdminTab = 'creatures' | 'spawn' | 'rarity' | 'catch'
+type AdminTab = 'creatures' | 'spawn' | 'rarity' | 'catch' | 'physics'
 
 const CREATURE_TYPES: CreatureType[] = ['fire', 'water', 'grass', 'electric', 'dark', 'normal']
 const RARITIES: Rarity[] = ['common', 'uncommon', 'rare', 'legendary']
@@ -211,13 +211,38 @@ export default function AdminPage() {
   const [localSpawnConfig, setLocalSpawnConfig] = useState(adminStore.spawnConfig)
   const [localRarityWeights, setLocalRarityWeights] = useState(adminStore.rarityWeights)
   const [localCatchConfig, setLocalCatchConfig] = useState(adminStore.catchConfig)
+  const [localEncounterPhysics, setLocalEncounterPhysics] = useState(adminStore.encounterPhysics)
+  const [localDebugSettings, setLocalDebugSettings] = useState(adminStore.debugSettings)
 
-  // Re-sync if store changes externally
-  useEffect(() => {
+  // Re-sync if store changes externally (avoiding useEffect for synchronous setState)
+  const [prevSyncData, setPrevSyncData] = useState({
+    spawn: adminStore.spawnConfig,
+    rarity: adminStore.rarityWeights,
+    catch: adminStore.catchConfig,
+    physics: adminStore.encounterPhysics,
+    debug: adminStore.debugSettings
+  })
+
+  if (
+    adminStore.spawnConfig !== prevSyncData.spawn ||
+    adminStore.rarityWeights !== prevSyncData.rarity ||
+    adminStore.catchConfig !== prevSyncData.catch ||
+    adminStore.encounterPhysics !== prevSyncData.physics ||
+    adminStore.debugSettings !== prevSyncData.debug
+  ) {
+    setPrevSyncData({
+      spawn: adminStore.spawnConfig,
+      rarity: adminStore.rarityWeights,
+      catch: adminStore.catchConfig,
+      physics: adminStore.encounterPhysics,
+      debug: adminStore.debugSettings
+    })
     setLocalSpawnConfig(adminStore.spawnConfig)
     setLocalRarityWeights(adminStore.rarityWeights)
     setLocalCatchConfig(adminStore.catchConfig)
-  }, [adminStore.spawnConfig, adminStore.rarityWeights, adminStore.catchConfig])
+    setLocalEncounterPhysics(adminStore.encounterPhysics)
+    setLocalDebugSettings(adminStore.debugSettings)
+  }
 
   const handleSaveCreature = useCallback((creature: Creature) => {
     if (editingCreature === 'new') {
@@ -235,8 +260,20 @@ export default function AdminPage() {
   }, [adminStore])
 
   const handleReset = useCallback(() => {
-    if (confirm('Reset ALL settings to defaults? This will undo all your changes.')) {
+    if (confirm('Reset ALL settings to defaults (including all creatures)? This will undo all your changes.')) {
       adminStore.resetToDefaults()
+    }
+  }, [adminStore])
+
+  const handleResetSection = useCallback((section: AdminTab) => {
+    if (confirm(`Reset ${section} settings to defaults?`)) {
+      switch (section) {
+        case 'creatures': adminStore.resetCreatures(); break;
+        case 'spawn': adminStore.resetSpawnConfig(); break;
+        case 'rarity': adminStore.resetRarityWeights(); break;
+        case 'catch': adminStore.resetCatchConfig(); break;
+        case 'physics': adminStore.resetEncounterPhysics(); break;
+      }
     }
   }, [adminStore])
 
@@ -244,14 +281,17 @@ export default function AdminPage() {
     adminStore.setSpawnConfig(localSpawnConfig)
     adminStore.setRarityWeights(localRarityWeights)
     adminStore.setCatchConfig(localCatchConfig)
+    adminStore.setEncounterPhysics(localEncounterPhysics)
+    adminStore.setDebugSettings(localDebugSettings)
     alert('Changes applied & saved successfully!')
-  }, [adminStore, localSpawnConfig, localRarityWeights, localCatchConfig])
+  }, [adminStore, localSpawnConfig, localRarityWeights, localCatchConfig, localEncounterPhysics, localDebugSettings])
 
   const tabs: { id: AdminTab; icon: string; label: string }[] = [
     { id: 'creatures', icon: '🐾', label: 'Creatures' },
     { id: 'spawn', icon: '⚙️', label: 'Spawn' },
     { id: 'rarity', icon: '🎲', label: 'Rarity' },
     { id: 'catch', icon: '🎯', label: 'Catch' },
+    { id: 'physics', icon: '⚛️', label: 'Physics' },
   ]
 
 
@@ -262,7 +302,7 @@ export default function AdminPage() {
         <a className="admin-back" href="/">← Play Game</a>
         <h1 className="admin-title">⚙️ Admin Panel</h1>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="admin-reset" onClick={handleReset} style={{ background: '#e74c3c' }}>🔄 Reset</button>
+          <button className="admin-reset" onClick={handleReset} style={{ background: '#e74c3c' }}>🔄 Reset All</button>
           <button className="admin-apply btn-primary" onClick={handleApplyChanges}>💾 Save & Apply</button>
         </div>
       </div>
@@ -289,9 +329,22 @@ export default function AdminPage() {
           <div className="admin-section">
             <div className="section-header">
               <h2>Creature Registry</h2>
-              <button className="btn-add" onClick={() => setEditingCreature('new')}>
-                ✨ Add New
-              </button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <label className="debug-toggle">
+                  <input
+                    type="checkbox"
+                    checked={localDebugSettings.creatures}
+                    onChange={e => setLocalDebugSettings({ ...localDebugSettings, creatures: e.target.checked })}
+                  />
+                  <span className="debug-label">Log Mode</span>
+                </label>
+                <button className="btn-secondary btn-mini" onClick={() => handleResetSection('creatures')}>
+                  🔄 Reset Registry
+                </button>
+                <button className="btn-add btn-sm" onClick={() => setEditingCreature('new')}>
+                  ✨ Add New
+                </button>
+              </div>
             </div>
 
             <div className="creature-list">
@@ -336,7 +389,22 @@ export default function AdminPage() {
         {/* ── Spawn Settings Tab ─────────────────── */}
         {activeTab === 'spawn' && (
           <div className="admin-section">
-            <h2>Spawn Configuration</h2>
+            <div className="section-header">
+              <h2>Spawn Configuration</h2>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <label className="debug-toggle">
+                  <input
+                    type="checkbox"
+                    checked={localDebugSettings.spawn}
+                    onChange={e => setLocalDebugSettings({ ...localDebugSettings, spawn: e.target.checked })}
+                  />
+                  <span className="debug-label">Log Mode</span>
+                </label>
+                <button className="btn-secondary btn-mini" onClick={() => handleResetSection('spawn')}>
+                  🔄 Reset Defaults
+                </button>
+              </div>
+            </div>
 
             <div className="settings-grid">
               <div className="setting-item">
@@ -445,7 +513,22 @@ export default function AdminPage() {
         {/* ── Rarity Weights Tab ─────────────────── */}
         {activeTab === 'rarity' && (
           <div className="admin-section">
-            <h2>Rarity Spawn Weights</h2>
+            <div className="section-header">
+              <h2>Rarity Spawn Weights</h2>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <label className="debug-toggle">
+                  <input
+                    type="checkbox"
+                    checked={localDebugSettings.rarity}
+                    onChange={e => setLocalDebugSettings({ ...localDebugSettings, rarity: e.target.checked })}
+                  />
+                  <span className="debug-label">Log Mode</span>
+                </label>
+                <button className="btn-secondary btn-mini" onClick={() => handleResetSection('rarity')}>
+                  🔄 Reset Defaults
+                </button>
+              </div>
+            </div>
             <p className="section-desc">Adjust the probability of each rarity tier spawning.</p>
 
             <div className="rarity-weights-container">
@@ -491,7 +574,22 @@ export default function AdminPage() {
         {/* ── Catch Settings Tab ─────────────────── */}
         {activeTab === 'catch' && (
           <div className="admin-section">
-            <h2>Catch Mechanics</h2>
+            <div className="section-header">
+              <h2>Catch Mechanics</h2>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <label className="debug-toggle">
+                  <input
+                    type="checkbox"
+                    checked={localDebugSettings.catch}
+                    onChange={e => setLocalDebugSettings({ ...localDebugSettings, catch: e.target.checked })}
+                  />
+                  <span className="debug-label">Log Mode</span>
+                </label>
+                <button className="btn-secondary btn-mini" onClick={() => handleResetSection('catch')}>
+                  🔄 Reset Defaults
+                </button>
+              </div>
+            </div>
 
             <div className="settings-grid">
               <div className="setting-item">
@@ -551,6 +649,142 @@ export default function AdminPage() {
                       onChange={e => setLocalCatchConfig({ ...localCatchConfig, xpPerFlee: Number(e.target.value) })}
                       className="num-input"
                     />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Encounter Physics Tab ──────────────── */}
+        {activeTab === 'physics' && (
+          <div className="admin-section">
+            <div className="section-header">
+              <h2>Ball Physics & Gestures</h2>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <label className="debug-toggle">
+                  <input
+                    type="checkbox"
+                    checked={localDebugSettings.physics}
+                    onChange={e => setLocalDebugSettings({ ...localDebugSettings, physics: e.target.checked })}
+                  />
+                  <span className="debug-label">Log Mode</span>
+                </label>
+                <button className="btn-secondary btn-mini" onClick={() => handleResetSection('physics')}>
+                  🔄 Reset Defaults
+                </button>
+              </div>
+            </div>
+            <p className="section-desc">Fine-tune the "feel" of throwing the capture ball.</p>
+
+            <div className="settings-grid">
+              <div className="setting-item">
+                <label>Ambang Batas Lemparan (Throw Threshold)</label>
+                <p className="setting-desc">Jarak geser minimum ke atas untuk memicu lemparan. Jika tarikan jari kurang dari ini, bola hanya akan memantul kembali ke posisi awal.</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={-100}
+                    max={-10}
+                    value={localEncounterPhysics.throwThreshold}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, throwThreshold: Number(e.target.value) })}
+                  />
+                  <span className="setting-value">{localEncounterPhysics.throwThreshold}px</span>
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Sensitivitas Seret (Drag Sensitivity)</label>
+                <p className="setting-desc">Mengatur seberapa responsif bola mengikuti gerakan jari saat diseret. Nilai lebih tinggi membuat bola terasa lebih "lengket" di jari.</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={0.001}
+                    max={0.02}
+                    step={0.001}
+                    value={localEncounterPhysics.dragMultiplier}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, dragMultiplier: Number(e.target.value) })}
+                  />
+                  <span className="setting-value">{localEncounterPhysics.dragMultiplier.toFixed(3)}</span>
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Kekuatan Lemparan (Throw Power)</label>
+                <p className="setting-desc">Kecepatan meluncur bola ke arah target. Semakin tinggi nilainya, bola akan melesat lebih cepat dan menjangkau area yang lebih jauh.</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={0.005}
+                    max={0.05}
+                    step={0.001}
+                    value={localEncounterPhysics.throwMultiplier}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, throwMultiplier: Number(e.target.value) })}
+                  />
+                  <span className="setting-value">{localEncounterPhysics.throwMultiplier.toFixed(3)}</span>
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Massa Bola (Ball Mass)</label>
+                <p className="setting-desc">Bobot bola dalam simulasi fisika. Bola yang lebih berat (nilai tinggi) akan terasa lebih lambat dan memerlukan tenaga lebih untuk dilempar.</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={0.1}
+                    max={5}
+                    step={0.1}
+                    value={localEncounterPhysics.mass}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, mass: Number(e.target.value) })}
+                  />
+                  <span className="setting-value">{localEncounterPhysics.mass.toFixed(1)}</span>
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Tegangan Pegas (Spring Tension)</label>
+                <p className="setting-desc">Mengatur kekakuan pegas saat bola kembali ke posisi awal. Semakin tinggi nilainya, bola akan kembali dengan lebih cepat dan reaktif.</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={50}
+                    max={500}
+                    step={10}
+                    value={localEncounterPhysics.tension}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, tension: Number(e.target.value) })}
+                  />
+                  <span className="setting-value">{localEncounterPhysics.tension}</span>
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Gesekan Pegas (Spring Friction)</label>
+                <p className="setting-desc">Mengatur redaman pegas. Nilai tinggi akan menghentikan getaran bola lebih cepat saat kembali ke posisi awal tanpa terlalu banyak memantul.</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={5}
+                    max={100}
+                    step={1}
+                    value={localEncounterPhysics.friction}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, friction: Number(e.target.value) })}
+                  />
+                  <span className="setting-value">{localEncounterPhysics.friction}</span>
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Ambang Batas Meleset (Whiff Threshold)</label>
+                <p className="setting-desc">Batas toleransi melenceng secara horizontal (kiri/kanan). Jika bola dilempar terlalu miring melewati batas ini, lemparan dianggap gagal total.</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={50}
+                    max={500}
+                    step={10}
+                    value={localEncounterPhysics.whiffThreshold}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, whiffThreshold: Number(e.target.value) })}
+                  />
+                  <span className="setting-value">±{localEncounterPhysics.whiffThreshold}px</span>
                 </div>
               </div>
             </div>
