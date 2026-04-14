@@ -10,7 +10,7 @@ export default function TopBar() {
     <div className="top-bar">
       <div className="top-bar-left">
         <div className="player-avatar">
-          <Icon icon="ph:user-circle-duotone" />
+          <img src="/images/profile.png" alt="Profile" className="player-avatar-img" />
         </div>
         <div className="player-info">
           <span className="player-name">{name}</span>

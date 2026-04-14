@@ -8,7 +8,7 @@ export default function ProfileScreen() {
   return (
     <div className="profile-screen">
       <div className="profile-avatar-lg">
-        <Icon icon="ph:user-circle-duotone" />
+        <img src="/images/profile.png" alt="Profile" className="profile-avatar-lg-img" />
       </div>
       <h1 className="profile-name">{player.name}</h1>
       <div className="profile-level-badge">Level {player.level}</div>
