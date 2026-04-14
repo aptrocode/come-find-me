@@ -7,7 +7,7 @@ import {
   RARITY_WEIGHTS, CP_VARIANCE, CATCH_FLEE_THRESHOLD,
   XP_PER_CATCH, XP_PER_FLEE,
   BALL_THROW_THRESHOLD, BALL_DRAG_MULTIPLIER, BALL_THROW_MULTIPLIER,
-  BALL_MASS, BALL_TENSION, BALL_FRICTION, BALL_WHIFF_THRESHOLD
+  BALL_MASS, BALL_TENSION, BALL_FRICTION, BALL_WHIFF_THRESHOLD, BALL_GROUND_Y
 } from '../config/constants'
 
 // ─── Types ─────────────────────────────────────────────────────────
@@ -43,6 +43,12 @@ export interface EncounterPhysicsConfig {
   tension: number
   friction: number
   whiffThreshold: number
+  groundY: number
+  showGround: boolean
+  groundColor: string
+  groundOpacity: number
+  groundMetalness: number
+  groundRoughness: number
 }
 
 export interface DebugSettings {
@@ -157,6 +163,12 @@ const defaultEncounterPhysics: EncounterPhysicsConfig = {
   tension: BALL_TENSION,
   friction: BALL_FRICTION,
   whiffThreshold: BALL_WHIFF_THRESHOLD,
+  groundY: BALL_GROUND_Y,
+  showGround: false,
+  groundColor: '#4ecdc4',
+  groundOpacity: 0.8,
+  groundMetalness: 0.1,
+  groundRoughness: 0.8,
 }
 
 const defaultDebugSettings: DebugSettings = {

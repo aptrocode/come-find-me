@@ -14,12 +14,13 @@ export const LEVEL_CATCH_PENALTY = 0.02   // per creature level
 
 // Ball Physics (Defaults)
 export const BALL_THROW_THRESHOLD = -30
-export const BALL_DRAG_MULTIPLIER = 0.005
+export const BALL_DRAG_MULTIPLIER = 0.015
 export const BALL_THROW_MULTIPLIER = 0.01
 export const BALL_MASS = 1
 export const BALL_TENSION = 170
 export const BALL_FRICTION = 30
 export const BALL_WHIFF_THRESHOLD = 250
+export const BALL_GROUND_Y = -1.5
 
 // Player
 export const XP_PER_CATCH = 100

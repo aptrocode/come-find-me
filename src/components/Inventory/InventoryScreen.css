@@ -127,7 +127,7 @@
 }
 
 .rarity-dot-common { background: #aaa; }
-.rarity-dot-uncommon { background: #4ECDC4; }
+.rarity-dot-uncommon { background: #fdb913; }
 .rarity-dot-rare { background: #FFD700; }
 .rarity-dot-legendary { background: #FF6B35; box-shadow: 0 0 6px rgba(255, 107, 53, 0.5); }
 

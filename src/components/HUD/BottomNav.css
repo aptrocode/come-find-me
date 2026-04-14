@@ -34,7 +34,7 @@
 }
 
 .nav-tab.active {
-  background: rgba(78, 205, 196, 0.15);
+  background: rgba(227, 30, 36, 0.15);
 }
 
 .nav-icon {
@@ -45,9 +45,9 @@
 }
 
 .nav-tab.active .nav-icon {
-  color: #4ECDC4;
+  color: #e31e24;
   transform: scale(1.2) translateY(-2px);
-  filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.4));
+  filter: drop-shadow(0 0 8px rgba(227, 30, 36, 0.4));
 }
 
 .nav-label {
@@ -60,5 +60,5 @@
 }
 
 .nav-tab.active .nav-label {
-  color: #4ECDC4;
+  color: #e31e24;
 }

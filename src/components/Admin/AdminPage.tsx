@@ -211,6 +211,7 @@ function CreatureEditor({ creature, onSave, onClose }: CreatureEditorProps) {
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('creatures')
   const [editingCreature, setEditingCreature] = useState<Creature | null | 'new'>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const adminStore = useAdminStore()
   
@@ -303,47 +304,67 @@ export default function AdminPage() {
 
 
   return (
-    <div className="admin-page">
-      {/* Top Header */}
-      <div className="admin-header">
-        <a className="admin-back" href="/">
-          <Icon icon="ph:arrow-left-bold" />
-          <span>Play Game</span>
+    <div className="admin-layout">
+      {/* Mobile Header (Hidden on Desktop) */}
+      <div className="admin-mobile-header">
+        <button className="hamburger-btn" onClick={() => setIsSidebarOpen(true)}>
+          <Icon icon="ph:list-bold" />
+        </button>
+        <h1 className="admin-mobile-title">Admin Panel</h1>
+        <a className="admin-mobile-play" href="/">
+          <Icon icon="ph:play-circle-duotone" />
         </a>
-        <h1 className="admin-title">
-          <Icon icon="ph:gear-duotone" className="admin-title-icon" />
-          Admin Panel
-        </h1>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="admin-reset" onClick={handleReset}>
+      </div>
+
+      {/* Sidebar Overlay Backdrop (Mobile only) */}
+      {isSidebarOpen && <div className="sidebar-backdrop" onClick={() => setIsSidebarOpen(false)} />}
+
+      {/* Sidebar */}
+      <aside className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
+          <h1 className="sidebar-title">
+            <Icon icon="ph:gear-duotone" className="sidebar-title-icon" />
+            Config
+          </h1>
+          <a className="sidebar-back" href="/">
+            <Icon icon="ph:arrow-left-bold" />
+            <span>Play Game</span>
+          </a>
+        </div>
+
+        <nav className="sidebar-nav">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`sidebar-link ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab(tab.id)
+                setIsSidebarOpen(false)
+              }}
+            >
+              <Icon icon={tab.icon} className="sidebar-link-icon" />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="sidebar-footer">
+          <button className="btn-secondary sidebar-btn" onClick={handleReset}>
             <Icon icon="ph:arrows-counter-clockwise-bold" />
-            Reset All
+            Factory Reset
           </button>
-          <button className="admin-apply btn-primary" onClick={handleApplyChanges}>
+          <button className="btn-primary sidebar-btn" onClick={handleApplyChanges}>
             <Icon icon="ph:floppy-disk-back-duotone" />
-            Save & Apply
+            Save Changes
           </button>
         </div>
-      </div>
+      </aside>
 
-      {/* Tab Bar */}
-      <div className="admin-tabs">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`admin-tab ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            <Icon icon={tab.icon} className="admin-tab-icon" />
-            <span className="admin-tab-label">{tab.label}</span>
-          </button>
-        ))}
-      </div>
+      {/* Main Content */}
+      <main className="admin-main">
+        <div className="admin-content-wrapper">
 
-      {/* Content */}
-      <div className="admin-content">
-
-        {/* ── Creatures Tab ──────────────────────── */}
+          {/* ── Creatures Tab ──────────────────────── */}
         {activeTab === 'creatures' && (
           <div className="admin-section">
             <div className="section-header">
@@ -580,7 +601,12 @@ export default function AdminPage() {
                           onChange={e => setLocalRarityWeights({ ...localRarityWeights, [rarity]: Number(e.target.value) })}
                           style={{ '--track-color': RARITY_COLORS[rarity] } as React.CSSProperties}
                         />
-                      <span className="rarity-weight-val">{weight}</span>
+                      <input
+                        type="number"
+                        className="setting-value-input"
+                        value={weight}
+                        onChange={e => setLocalRarityWeights({ ...localRarityWeights, [rarity]: Number(e.target.value) })}
+                      />
                     </div>
                     <div className="rarity-weight-bar">
                       <div
@@ -717,7 +743,12 @@ export default function AdminPage() {
                     value={localEncounterPhysics.throwThreshold}
                     onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, throwThreshold: Number(e.target.value) })}
                   />
-                  <span className="setting-value">{localEncounterPhysics.throwThreshold}px</span>
+                  <input
+                    type="number"
+                    className="setting-value-input"
+                    value={localEncounterPhysics.throwThreshold}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, throwThreshold: Number(e.target.value) })}
+                  />
                 </div>
               </div>
 
@@ -733,7 +764,13 @@ export default function AdminPage() {
                     value={localEncounterPhysics.dragMultiplier}
                     onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, dragMultiplier: Number(e.target.value) })}
                   />
-                  <span className="setting-value">{localEncounterPhysics.dragMultiplier.toFixed(3)}</span>
+                  <input
+                    type="number"
+                    step={0.001}
+                    className="setting-value-input"
+                    value={localEncounterPhysics.dragMultiplier}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, dragMultiplier: Number(e.target.value) })}
+                  />
                 </div>
               </div>
 
@@ -749,7 +786,13 @@ export default function AdminPage() {
                     value={localEncounterPhysics.throwMultiplier}
                     onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, throwMultiplier: Number(e.target.value) })}
                   />
-                  <span className="setting-value">{localEncounterPhysics.throwMultiplier.toFixed(3)}</span>
+                  <input
+                    type="number"
+                    step={0.001}
+                    className="setting-value-input"
+                    value={localEncounterPhysics.throwMultiplier}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, throwMultiplier: Number(e.target.value) })}
+                  />
                 </div>
               </div>
 
@@ -765,7 +808,13 @@ export default function AdminPage() {
                     value={localEncounterPhysics.mass}
                     onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, mass: Number(e.target.value) })}
                   />
-                  <span className="setting-value">{localEncounterPhysics.mass.toFixed(1)}</span>
+                  <input
+                    type="number"
+                    step={0.1}
+                    className="setting-value-input"
+                    value={localEncounterPhysics.mass}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, mass: Number(e.target.value) })}
+                  />
                 </div>
               </div>
 
@@ -781,7 +830,12 @@ export default function AdminPage() {
                     value={localEncounterPhysics.tension}
                     onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, tension: Number(e.target.value) })}
                   />
-                  <span className="setting-value">{localEncounterPhysics.tension}</span>
+                  <input
+                    type="number"
+                    className="setting-value-input"
+                    value={localEncounterPhysics.tension}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, tension: Number(e.target.value) })}
+                  />
                 </div>
               </div>
 
@@ -797,7 +851,12 @@ export default function AdminPage() {
                     value={localEncounterPhysics.friction}
                     onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, friction: Number(e.target.value) })}
                   />
-                  <span className="setting-value">{localEncounterPhysics.friction}</span>
+                  <input
+                    type="number"
+                    className="setting-value-input"
+                    value={localEncounterPhysics.friction}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, friction: Number(e.target.value) })}
+                  />
                 </div>
               </div>
 
@@ -813,13 +872,146 @@ export default function AdminPage() {
                     value={localEncounterPhysics.whiffThreshold}
                     onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, whiffThreshold: Number(e.target.value) })}
                   />
-                  <span className="setting-value">±{localEncounterPhysics.whiffThreshold}px</span>
+                  <input
+                    type="number"
+                    className="setting-value-input"
+                    value={localEncounterPhysics.whiffThreshold}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, whiffThreshold: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+            </div>
+            
+            <hr className="section-divider" />
+
+            <div className="section-header">
+              <h2>Ground Visualization</h2>
+            </div>
+            <p className="section-desc">Atur tampilan dan posisi lantai (karpet) tempat bola memantul.</p>
+            
+            <div className="settings-grid">
+              <div className="setting-item">
+                <label>Posisi Lantai (Ground Level Y)</label>
+                <p className="setting-desc">Mengatur level ketinggian lantai pantulan (invisible carpet). Lebih negatif = lantai lebih dalam.</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={-5.0}
+                    max={0.0}
+                    step={0.01}
+                    value={localEncounterPhysics.groundY}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, groundY: Number(e.target.value) })}
+                  />
+                  <input
+                    type="number"
+                    step={0.01}
+                    className="setting-value-input"
+                    value={localEncounterPhysics.groundY}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, groundY: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Tampilkan Lantai (Show Ground)</label>
+                <p className="setting-desc">Tampilkan lantai secara visual di arena (membantu untuk melihat batas pantulan secara jelas).</p>
+                <div className="setting-control" style={{ marginTop: 'auto', paddingTop: '12px' }}>
+                  <label className="debug-toggle" style={{ flex: 1, margin: 0 }}>
+                    <input
+                      type="checkbox"
+                      checked={localEncounterPhysics.showGround || false}
+                      onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, showGround: e.target.checked })}
+                    />
+                    <span className="debug-label">Aktifkan Karpet</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Warna Karpet (Ground Color)</label>
+                <p className="setting-desc">Pilih warna untuk lantai visual saat diaktifkan.</p>
+                <div className="setting-control">
+                  <input
+                    type="color"
+                    value={localEncounterPhysics.groundColor || '#4ecdc4'}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, groundColor: e.target.value })}
+                    style={{ width: '100%', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                  />
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Transparansi (Opacity)</label>
+                <p className="setting-desc">Mengatur tingkat kejelasan karpet (1 = padat, 0 = tembus pandang).</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.1}
+                    value={localEncounterPhysics.groundOpacity ?? 0.8}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, groundOpacity: Number(e.target.value) })}
+                  />
+                  <input
+                    type="number"
+                    step={0.1}
+                    className="setting-value-input"
+                    value={localEncounterPhysics.groundOpacity ?? 0.8}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, groundOpacity: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Kilau (Metalness)</label>
+                <p className="setting-desc">Mengatur seberapa mengkilap/metalik pantulan cahaya pada karpet.</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.1}
+                    value={localEncounterPhysics.groundMetalness ?? 0.1}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, groundMetalness: Number(e.target.value) })}
+                  />
+                  <input
+                    type="number"
+                    step={0.1}
+                    className="setting-value-input"
+                    value={localEncounterPhysics.groundMetalness ?? 0.1}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, groundMetalness: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label>Kekasaran (Roughness)</label>
+                <p className="setting-desc">Mengatur kehalusan permukaan karpet (lebih besar = lebih matte/doff).</p>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.1}
+                    value={localEncounterPhysics.groundRoughness ?? 0.8}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, groundRoughness: Number(e.target.value) })}
+                  />
+                  <input
+                    type="number"
+                    step={0.1}
+                    className="setting-value-input"
+                    value={localEncounterPhysics.groundRoughness ?? 0.8}
+                    onChange={e => setLocalEncounterPhysics({ ...localEncounterPhysics, groundRoughness: Number(e.target.value) })}
+                  />
                 </div>
               </div>
             </div>
           </div>
         )}
-      </div>
+        
+        </div>
+      </main>
 
       {/* Creature Editor Modal */}
       {editingCreature !== null && (
