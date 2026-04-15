@@ -11,14 +11,6 @@ import type { CreatureBounds } from '../../atoms/CreatureModel'
 import BallModel from '../../atoms/BallModel'
 import './EncounterScreen.css'
 
-// ─── Constants for the throw arc ──────────────────────────────────
-const BALL_START_POS: [number, number, number] = [0, -1.0, 1]
-const BALL_START_SCALE = 0.25
-const BALL_MIN_SCALE = 0.06
-
-const CREATURE_Z = -3
-const CREATURE_Y = 0.5
-
 // Fallback hit box if bounding box hasn't been computed yet
 const FALLBACK_HIT_HALF_W = 0.4
 const FALLBACK_HIT_HALF_H = 0.8
@@ -122,12 +114,22 @@ interface ThrowBallProps {
   ballInFlightRef: React.RefObject<boolean>
 }
 
-function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: ThrowBallProps) {
+interface ThrowBallProps {
+  gesture: GestureData
+  onHit: () => void
+  onMiss: () => void
+  creatureBounds: React.RefObject<CreatureBounds | null>
+  ballInFlightRef: React.RefObject<boolean>
+  creatureZ: number
+  creatureY: number
+}
+
+function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef, creatureZ, creatureY }: ThrowBallProps) {
   const groupRef = useRef<THREE.Group>(null)
   const phase = useRef<BallPhase>('idle')
   const velocity = useRef({ x: 0, y: 0, z: 0 })
-  const pos = useRef({ x: BALL_START_POS[0], y: BALL_START_POS[1], z: BALL_START_POS[2] })
-  const scale = useRef(BALL_START_SCALE)
+  const pos = useRef({ x: 0, y: -1.0, z: 1 })
+  const scale = useRef(0.25)
   const spin = useRef(0)
   const spinSpeed = useRef(SPIN_SPEED_MIN)
   const resolved = useRef(false)
@@ -203,7 +205,7 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
     // ── Handle drag state ──
     if (gesture.phase === 'dragging' && phase.current !== 'thrown') {
       phase.current = 'dragging'
-      const distToBall = camera.position.z - BALL_START_POS[2]
+      const distToBall = camera.position.z - 1
       const fov = (camera as THREE.PerspectiveCamera).fov
       const halfFovRad = THREE.MathUtils.degToRad(fov / 2)
       const worldHeight = 2 * distToBall * Math.tan(halfFovRad)
@@ -211,10 +213,10 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
       const pxToWorldX = worldWidth / size.width
       const pxToWorldY = worldHeight / size.height
       const dragScale = encounterPhysics.dragMultiplier / 0.015
-      pos.current.x = BALL_START_POS[0] + gesture.mx * pxToWorldX * dragScale
-      pos.current.y = BALL_START_POS[1] + (-gesture.my) * pxToWorldY * dragScale
-      pos.current.z = BALL_START_POS[2]
-      scale.current = BALL_START_SCALE * 1.1
+      pos.current.x = 0 + gesture.mx * pxToWorldX * dragScale
+      pos.current.y = -1.0 + (-gesture.my) * pxToWorldY * dragScale
+      pos.current.z = 1
+      scale.current = 0.25 * 1.1
     }
 
     // ── Handle snap-back to idle ──
@@ -224,10 +226,10 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
 
     // ── Physics update ──
     if (phase.current === 'idle') {
-      pos.current.x = BALL_START_POS[0]
-      pos.current.y = BALL_START_POS[1]
-      pos.current.z = BALL_START_POS[2]
-      scale.current = BALL_START_SCALE
+      pos.current.x = 0
+      pos.current.y = -1.0
+      pos.current.z = 1
+      scale.current = 0.25
       spin.current = 0
       bounceCount.current = 0
       flightTime.current = 0
@@ -246,34 +248,34 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
       // Spin animation
       spin.current += spinSpeed.current * dt
 
-      // Perspective scale: shrink as ball goes deeper
-      const totalZ = BALL_START_POS[2] - CREATURE_Z
-      const progress = Math.max(0, Math.min(1, (BALL_START_POS[2] - pos.current.z) / totalZ))
-      scale.current = THREE.MathUtils.lerp(BALL_START_SCALE, BALL_MIN_SCALE, progress)
+      // Perspective scale: shrink as ball goes deeper (relative to baseline)
+      const totalZ = 1 - creatureZ
+      const progress = Math.max(0, Math.min(1, (1 - pos.current.z) / totalZ))
+      scale.current = THREE.MathUtils.lerp(0.25, 0.06, progress)
 
       // ── Hit detection using actual 3D model bounding box ──
       const bounds = creatureBounds.current
       const hw = bounds ? bounds.halfWidth : FALLBACK_HIT_HALF_W
       const hh = bounds ? bounds.halfHeight : FALLBACK_HIT_HALF_H
       const hd = bounds ? bounds.halfDepth : FALLBACK_HIT_HALF_D
-      const cY = bounds ? bounds.centerY : CREATURE_Y
+      const cY = bounds ? bounds.centerY : creatureY
 
-      const inHitZone = pos.current.z <= CREATURE_Z + hd && pos.current.z >= CREATURE_Z - hd
+      const inHitZone = pos.current.z <= creatureZ + hd && pos.current.z >= creatureZ - hd
       if (!resolved.current && inHitZone) {
         const withinX = Math.abs(pos.current.x) <= hw
         const withinY = Math.abs(pos.current.y - cY) <= hh
 
         if (withinX && withinY) {
           resolved.current = true
-          pos.current = { x: 0, y: cY, z: CREATURE_Z }
-          groupRef.current.position.set(0, cY, CREATURE_Z)
+          pos.current = { x: 0, y: cY, z: creatureZ }
+          groupRef.current.position.set(0, cY, creatureZ)
           phase.current = 'idle'
           onHit()
           return
         }
       }
       // Ball flew past creature without hitting
-      if (!resolved.current && pos.current.z < CREATURE_Z - hd) {
+      if (!resolved.current && pos.current.z < creatureZ - hd) {
         resolved.current = true
       }
 
@@ -318,8 +320,8 @@ function ThrowBall({ gesture, onHit, onMiss, creatureBounds, ballInFlightRef }: 
   return (
     <group
       ref={groupRef}
-      position={BALL_START_POS}
-      scale={[BALL_START_SCALE, BALL_START_SCALE, BALL_START_SCALE]}
+      position={[0, -1.0, 1]}
+      scale={[0.25, 0.25, 0.25]}
     >
       <Center>
         <BallModel />
@@ -456,9 +458,12 @@ export default function EncounterScreen() {
 
                 {/* Target Model */}
                 {(!encounterResult || encounterResult === 'missed') && (
-                  <Center position={[0, 0.5, -3]}>
-                    <CreatureModel url={modelUrl} scale={2} onBoundsComputed={handleBoundsComputed} />
-                  </Center>
+                  <CreatureModel 
+                    url={modelUrl} 
+                    scale={creature.modelScale ?? 2.5} 
+                    position={[0, creature.modelY ?? 0, creature.modelZ ?? -3]} 
+                    onBoundsComputed={handleBoundsComputed} 
+                  />
                 )}
 
                 {/* Shadows */}
@@ -489,6 +494,8 @@ export default function EncounterScreen() {
                     onMiss={handleMiss}
                     creatureBounds={creatureBoundsRef}
                     ballInFlightRef={ballInFlightRef}
+                    creatureZ={creature.modelZ ?? -3}
+                    creatureY={creature.modelY ?? 0}
                   />
                 )}
               </Suspense>

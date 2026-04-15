@@ -153,9 +153,11 @@ export default function CreatureDetail({ entry, onClose }: CreatureDetailProps) 
                 <hemisphereLight args={[creature.color, '#0a0a1a', 0.3]} />
 
                 <AutoRotate>
-                  <Center>
-                    <CreatureModel url={modelUrl} scale={2.2} />
-                  </Center>
+                  <CreatureModel 
+                    url={modelUrl} 
+                    scale={creature.modelScale ?? 2.2} 
+                    position={[0, creature.modelY ?? -0.3, 0]} 
+                  />
                 </AutoRotate>
 
                 <ContactShadows

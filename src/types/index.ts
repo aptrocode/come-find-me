@@ -19,6 +19,9 @@ export interface Creature {
   description: string
   color: string        // Theme color for UI
   modelUrl?: string    // Path to GLB model (e.g. '/models/bikini-girl.glb')
+  modelY?: number      // Manual Y offset
+  modelZ?: number      // Manual Z offset
+  modelScale?: number  // Manual scale override
 }
 
 export interface SpawnPoint {

@@ -12,6 +12,10 @@ export const CREATURES: Creature[] = [
     baseCP: 120,
     description: 'A playful pup made of living flame.',
     color: '#FF6B35',
+    modelUrl: '',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
   {
     id: 'aquafin',

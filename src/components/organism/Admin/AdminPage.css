@@ -893,6 +893,15 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.model-alignment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--admin-border);
+}
+
 @media (max-width: 600px) {
   .admin-header {
     padding: 16px;

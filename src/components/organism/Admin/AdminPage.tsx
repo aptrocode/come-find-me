@@ -42,6 +42,9 @@ function CreatureEditor({ creature, onSave, onClose }: CreatureEditorProps) {
     description: '',
     color: '#4ECDC4',
     modelUrl: '',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   })
 
   const [uploading, setUploading] = useState(false)
@@ -215,6 +218,39 @@ function CreatureEditor({ creature, onSave, onClose }: CreatureEditorProps) {
               <span className="model-status">
                 {form.modelUrl.startsWith('blob:') ? '⚠️ Temporary (Re-upload recommended)' : '✅ Permanent Path Set'}
               </span>
+            )}
+
+            {form.modelUrl && (
+              <div className="model-alignment-grid">
+                <div className="form-group">
+                  <label>Model Y (Height)</label>
+                  <input
+                    type="number"
+                    step={0.1}
+                    value={form.modelY ?? 0}
+                    onChange={e => updateField('modelY', Number(e.target.value))}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Model Z (Distance)</label>
+                  <input
+                    type="number"
+                    step={0.1}
+                    value={form.modelZ ?? -3}
+                    onChange={e => updateField('modelZ', Number(e.target.value))}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Model Scale</label>
+                  <input
+                    type="number"
+                    step={0.1}
+                    min={0.1}
+                    value={form.modelScale ?? 2}
+                    onChange={e => updateField('modelScale', Number(e.target.value))}
+                  />
+                </div>
+              </div>
             )}
           </div>
 
