@@ -1,0 +1,397 @@
+/* ─── Full-screen creature detail overlay ─── */
+.creature-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999; /* Above everything including nav bars */
+  display: flex;
+  flex-direction: column;
+  animation: detailFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+@keyframes detailFadeIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.creature-detail-overlay.closing {
+  animation: detailFadeOut 0.3s ease forwards;
+}
+
+@keyframes detailFadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.92); }
+}
+
+/* ─── Background with gradient based on creature color ─── */
+.detail-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.detail-bg-gradient {
+  position: absolute;
+  inset: 0;
+  opacity: 0.85;
+}
+
+.detail-bg-noise {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.5) 0%, transparent 70%);
+}
+
+.detail-bg-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.detail-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  animation: particleFloat 8s ease-in-out infinite;
+}
+
+.detail-particle:nth-child(1) { left: 15%; top: 20%; animation-delay: 0s; animation-duration: 7s; }
+.detail-particle:nth-child(2) { left: 75%; top: 35%; animation-delay: 1.5s; animation-duration: 9s; }
+.detail-particle:nth-child(3) { left: 40%; top: 60%; animation-delay: 3s; animation-duration: 6s; }
+.detail-particle:nth-child(4) { left: 85%; top: 15%; animation-delay: 2s; animation-duration: 8s; }
+.detail-particle:nth-child(5) { left: 25%; top: 80%; animation-delay: 4s; animation-duration: 10s; }
+.detail-particle:nth-child(6) { left: 60%; top: 75%; animation-delay: 1s; animation-duration: 7.5s; }
+
+@keyframes particleFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.15; }
+  25% { transform: translate(10px, -20px) scale(1.5); opacity: 0.3; }
+  50% { transform: translate(-5px, -40px) scale(1); opacity: 0.2; }
+  75% { transform: translate(15px, -15px) scale(1.3); opacity: 0.25; }
+}
+
+/* ─── Scrollable content container ─── */
+.detail-scroll-content {
+  position: relative;
+  z-index: 5;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* No scroll — everything fits in viewport */
+}
+
+/* ─── Top bar ─── */
+.detail-top-bar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(10px, 2vh, 16px) clamp(12px, 4vw, 20px);
+  padding-top: max(clamp(10px, 2vh, 16px), env(safe-area-inset-top, 10px));
+  flex-shrink: 0;
+}
+
+.detail-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: clamp(6px, 1.2vh, 10px) clamp(12px, 3vw, 16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: clamp(0.75rem, 2vw, 0.85rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.detail-back-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.detail-fav-btn {
+  width: clamp(32px, 8vw, 40px);
+  height: clamp(32px, 8vw, 40px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.detail-fav-btn:active {
+  transform: scale(0.9);
+}
+
+/* ─── CP badge (floating over 3D scene) ─── */
+.detail-cp-badge {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding: clamp(2px, 0.5vh, 6px) 0;
+  flex-shrink: 0;
+  animation: cpPulseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+@keyframes cpPulseIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.cp-label {
+  font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cp-value {
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.02em;
+}
+
+/* ─── 3D Model viewer ─── */
+.detail-3d-viewer {
+  position: relative;
+  z-index: 5;
+  flex: 1 1 0; /* Fill ALL remaining space between CP badge and info card */
+  min-height: 0; /* Allow shrinking */
+  touch-action: none;
+}
+
+.detail-3d-viewer canvas {
+  cursor: grab;
+}
+
+.detail-3d-viewer canvas:active {
+  cursor: grabbing;
+}
+
+.detail-3d-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+  animation: hintFade 4s ease 2s both;
+}
+
+@keyframes hintFade {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ─── Info card (bottom sheet) ─── */
+.detail-info-card {
+  position: relative;
+  z-index: 10;
+  background: rgba(10, 14, 39, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: clamp(20px, 5vw, 28px) clamp(20px, 5vw, 28px) 0 0;
+  padding: clamp(12px, 2vh, 16px) clamp(16px, 4vw, 24px);
+  /* Extra bottom padding: nav bar is ~64px + safe area */
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
+  margin-top: -10px; /* Overlap slightly into 3D viewer to kill the gap */
+  animation: cardSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(60px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Drag handle */
+.detail-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 auto clamp(8px, 1.5vh, 12px);
+}
+
+/* Name + Type row */
+.detail-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.detail-creature-name {
+  font-size: clamp(1.2rem, 5vw, 1.6rem);
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.detail-type-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: clamp(4px, 1vw, 5px) clamp(8px, 2vw, 12px);
+  border-radius: 20px;
+  font-size: clamp(0.6rem, 1.8vw, 0.7rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.detail-type-icon {
+  font-size: clamp(0.7rem, 2vw, 0.85rem);
+}
+
+/* Rarity bar */
+.detail-rarity-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: clamp(10px, 2vh, 16px);
+  flex-wrap: wrap;
+}
+
+.detail-rarity-tag {
+  font-size: clamp(0.55rem, 1.5vw, 0.65rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px clamp(8px, 2vw, 10px);
+  border-radius: 8px;
+}
+
+.detail-rarity-common { background: rgba(170,170,170,0.15); color: #aaa; }
+.detail-rarity-uncommon { background: rgba(253,185,19,0.15); color: #fdb913; }
+.detail-rarity-rare { background: rgba(255,215,0,0.15); color: #FFD700; }
+.detail-rarity-legendary { 
+  background: rgba(255,107,53,0.2); 
+  color: #FF6B35; 
+  box-shadow: 0 0 12px rgba(255,107,53,0.15);
+}
+
+.detail-caught-date {
+  font-size: clamp(0.55rem, 1.5vw, 0.65rem);
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 500;
+}
+
+/* Stat grid */
+.detail-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(6px, 1.5vw, 10px);
+  margin-bottom: clamp(10px, 2vh, 16px);
+}
+
+.detail-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: clamp(8px, 1.5vh, 12px) clamp(6px, 1.5vw, 8px);
+  border-radius: clamp(10px, 2.5vw, 14px);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detail-stat-value {
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  font-weight: 800;
+  color: #fff;
+}
+
+.detail-stat-label {
+  font-size: clamp(0.5rem, 1.3vw, 0.6rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Description */
+.detail-description {
+  font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  margin: 0;
+  padding: clamp(8px, 1.5vh, 12px) clamp(12px, 3vw, 16px);
+  border-radius: clamp(10px, 2.5vw, 14px);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-style: italic;
+}
+
+/* Type colors */
+.type-fire { background: rgba(255,107,53,0.15); color: #FF6B35; }
+.type-water { background: rgba(78,205,196,0.15); color: #4ECDC4; }
+.type-grass { background: rgba(123,201,80,0.15); color: #7BC950; }
+.type-electric { background: rgba(255,230,109,0.15); color: #FFE66D; }
+.type-dark { background: rgba(142,68,173,0.15); color: #c39bdb; }
+.type-normal { background: rgba(201,177,255,0.15); color: #C9B1FF; }
+
+/* ─── Responsive: very short screens (< 600px height) ─── */
+@media (max-height: 600px) {
+  .detail-info-card {
+    padding: 10px 14px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+  }
+  
+  .detail-stats-grid {
+    margin-bottom: 6px;
+  }
+  
+  .detail-stat-item {
+    padding: 6px 4px;
+  }
+  
+  .detail-handle {
+    margin-bottom: 6px;
+  }
+  
+  .detail-cp-badge {
+    padding: 0;
+  }
+}
+
+/* ─── Responsive: tall screens (> 800px height) ─── */
+@media (min-height: 800px) {
+  .detail-info-card {
+    padding: 20px 24px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  }
+}

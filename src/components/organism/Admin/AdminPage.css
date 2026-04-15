@@ -256,6 +256,7 @@
   font-weight: 800;
   background: linear-gradient(to right, #fff, var(--admin-text-dim));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -513,6 +514,7 @@
 .setting-control input[type="range"] {
   flex: 1;
   -webkit-appearance: none;
+  appearance: none;
   height: 8px;
   border-radius: 4px;
   background: var(--admin-border);
@@ -521,6 +523,7 @@
 
 .setting-control input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
+  appearance: none;
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -783,6 +786,7 @@
 .rarity-weight-control input[type="range"] {
   flex: 1;
   -webkit-appearance: none;
+  appearance: none;
   height: 8px;
   border-radius: 4px;
   background: var(--admin-border);
@@ -791,6 +795,7 @@
 
 .rarity-weight-control input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
+  appearance: none;
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -818,6 +823,76 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
+
+/* ─── Model Upload & Status ─── */
+.model-upload-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.model-url-input {
+  flex: 1;
+}
+
+.upload-btn {
+  white-space: nowrap;
+  min-width: 130px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background: rgba(253, 185, 19, 0.15);
+  border-color: var(--admin-secondary);
+  color: var(--admin-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(253, 185, 19, 0.1);
+}
+
+.upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.upload-btn.uploading {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--admin-border);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.model-status {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--admin-text-dim);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 @media (max-width: 600px) {
   .admin-header {
     padding: 16px;
@@ -828,3 +903,4 @@
   .settings-grid { grid-template-columns: 1fr; padding: 24px; }
   .modal-content { border-radius: 24px 24px 0 0; position: fixed; bottom: 0; max-height: 95vh; }
 }
+

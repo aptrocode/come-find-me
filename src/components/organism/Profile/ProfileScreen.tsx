@@ -1,4 +1,3 @@
-import { Icon } from '@iconify/react'
 import { useGameStore } from '../../../store/useGameStore'
 
 export default function ProfileScreen() {

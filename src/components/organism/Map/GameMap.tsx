@@ -8,6 +8,7 @@ import { useGameStore } from "../../../store/useGameStore";
 import { isWithinRange } from "../../../utils/geo";
 import { ENCOUNTER_RANGE, MAP_UPDATE_THROTTLE } from "../../../config/constants";
 import type { SpawnPoint } from "../../../types";
+import { useAdminStore } from "../../../store/useAdminStore";
 import LoadingScreen from "../../molecules/UI/LoadingScreen";
 
 export default function GameMap() {
@@ -18,8 +19,8 @@ export default function GameMap() {
   const { position, error, loading } = useGeolocation();
   const { map, mapReady } = useMapbox({ containerRef, position });
   const { spawns } = useSpawnManager(position);
-  const { startEncounter, activeEncounter, encounterPhase, setEncounterPhase } =
-    useGameStore();
+  const { startEncounter, activeEncounter, encounterPhase, setEncounterPhase } = useGameStore();
+  const { eventArea, mapConfig } = useAdminStore();
 
   const handleCreatureTap = useCallback(
     (spawn: SpawnPoint) => {
@@ -56,8 +57,8 @@ export default function GameMap() {
       // Revert map back when encounter ends
       map.flyTo({
         center: [position.lng, position.lat],
-        zoom: 16.5,
-        pitch: 60,
+        zoom: mapConfig.defaultZoom,
+        pitch: mapConfig.defaultPitch,
         bearing: 0,
         duration: 1500,
       });
@@ -69,6 +70,7 @@ export default function GameMap() {
     encounterPhase,
     setEncounterPhase,
     position,
+    mapConfig,
   ]);
 
   // Update player marker position
@@ -116,6 +118,40 @@ export default function GameMap() {
           features: [],
         },
       });
+
+      // Event Area Source & Layer
+      if (!map.getSource("event-area")) {
+        map.addSource("event-area", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: [],
+          },
+        });
+
+        // Add area fill
+        map.addLayer({
+          id: "event-area-fill",
+          type: "fill",
+          source: "event-area",
+          paint: {
+            "fill-color": eventArea.color || "#4ecdc4",
+            "fill-opacity": eventArea.opacity ?? 0.1,
+          },
+        });
+
+        // Add area border
+        map.addLayer({
+          id: "event-area-border",
+          type: "line",
+          source: "event-area",
+          paint: {
+            "line-color": eventArea.color || "#4ecdc4",
+            "line-width": 3,
+            "line-opacity": 0.5,
+          },
+        });
+      }
 
       // Glow layer
       map.addLayer({
@@ -177,7 +213,52 @@ export default function GameMap() {
         });
       }
     }
-  }, [map, mapReady, handleCreatureTap]);
+  }, [map, mapReady, handleCreatureTap, eventArea.color, eventArea.opacity]);
+
+  // Update Event Area geometry
+  useEffect(() => {
+    if (!map || !mapReady) return;
+    try {
+      const source = map.getSource("event-area") as mapboxgl.GeoJSONSource;
+      if (!source) return;
+
+      if (eventArea.enabled && eventArea.polygon.length >= 3) {
+        // Mapbox requires Polygons to be closed (first coordinate === last coordinate)
+        const coords = eventArea.polygon.map(p => [p.lng, p.lat]);
+        coords.push([...coords[0]]); // Close the polygon
+
+        const feature = {
+          type: "Feature" as const,
+          geometry: { 
+            type: "Polygon" as const, 
+            coordinates: [coords] 
+          },
+          properties: {}
+        };
+
+        source.setData({
+          type: "FeatureCollection",
+          features: [feature],
+        });
+      } else {
+        source.setData({
+          type: "FeatureCollection",
+          features: [],
+        });
+      }
+
+      // Update layer colors/opacity reactively
+      if (map.getLayer("event-area-fill")) {
+        map.setPaintProperty("event-area-fill", "fill-color", eventArea.color || "#4ecdc4");
+        map.setPaintProperty("event-area-fill", "fill-opacity", eventArea.opacity ?? 0.1);
+      }
+      if (map.getLayer("event-area-border")) {
+        map.setPaintProperty("event-area-border", "line-color", eventArea.color || "#4ecdc4");
+      }
+    } catch (e) {
+      console.error("Event area update error:", e);
+    }
+  }, [map, mapReady, eventArea]);
 
   // Update GeoJSON data when spawns change
   useEffect(() => {
@@ -281,12 +362,12 @@ export default function GameMap() {
     if (!map || !position) return;
     map.flyTo({
       center: [position.lng, position.lat],
-      zoom: 16.5,
-      pitch: 60,
+      zoom: mapConfig.defaultZoom,
+      pitch: mapConfig.defaultPitch,
       bearing: 0,
       duration: 800,
     });
-  }, [map, position]);
+  }, [map, position, mapConfig]);
 
   if (loading) return <LoadingScreen message="Acquiring GPS signal..." />;
   if (error) return <LoadingScreen message={error} isError />;

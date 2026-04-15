@@ -2,12 +2,41 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import fs from 'fs'
 import path from 'path'
+import type { ViteDevServer, Plugin } from 'vite'
+import type { IncomingMessage, ServerResponse } from 'http'
 
-function adminApiPlugin() {
+function adminApiPlugin(): Plugin {
   return {
     name: 'admin-api',
-    configureServer(server: any) {
-      server.middlewares.use(async (req: any, res: any, next: any) => {
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next) => {
+        // Handle 3D model uploads
+        if (req.url?.startsWith('/api/upload-model') && req.method === 'POST') {
+          const filename = (req.headers['x-filename'] as string) || 'model.glb'
+          const timestamp = Math.floor(Date.now() / 1000)
+          const safeName = `${timestamp}_${filename.replace(/[^a-z0-9.]/gi, '_').toLowerCase()}`
+          const modelsDir = path.resolve('public', 'models')
+          const finalPath = path.join(modelsDir, safeName)
+
+          if (!fs.existsSync(modelsDir)) {
+            fs.mkdirSync(modelsDir, { recursive: true })
+          }
+
+          const fileStream = fs.createWriteStream(finalPath)
+          req.pipe(fileStream)
+          
+          req.on('end', () => {
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ success: true, url: `/models/${safeName}` }))
+          })
+
+          req.on('error', (err: Error) => {
+            res.statusCode = 500
+            res.end(JSON.stringify({ error: String(err) }))
+          })
+          return
+        }
+
         if (!req.url?.startsWith('/api/admin-config')) {
           return next()
         }

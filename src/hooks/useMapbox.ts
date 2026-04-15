@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { MAPBOX_CONFIG } from '../config/mapbox'
+import { useAdminStore } from '../store/useAdminStore'
 import type { Position } from '../types'
 
 interface UseMapboxOptions {
@@ -12,6 +13,7 @@ export function useMapbox({ containerRef, position }: UseMapboxOptions) {
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const [mapReady, setMapReady] = useState(false)
   const initializedRef = useRef(false)
+  const { mapConfig } = useAdminStore()
 
   // Initialize map once we have a position and container
   useEffect(() => {
@@ -23,10 +25,10 @@ export function useMapbox({ containerRef, position }: UseMapboxOptions) {
       container: containerRef.current,
       style: MAPBOX_CONFIG.style,
       center: [position.lng, position.lat],
-      zoom: MAPBOX_CONFIG.defaultZoom,
+      zoom: mapConfig.defaultZoom,
       maxZoom: MAPBOX_CONFIG.maxZoom,
       minZoom: MAPBOX_CONFIG.minZoom,
-      pitch: 60, // Initial tilt for 3D perspective
+      pitch: mapConfig.defaultPitch, // Initial tilt for 3D perspective
       bearing: 0, // Initial rotation
       pitchWithRotate: MAPBOX_CONFIG.pitchEnabled,
       dragRotate: MAPBOX_CONFIG.rotateEnabled,

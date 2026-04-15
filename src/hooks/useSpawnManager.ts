@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import type { Position, SpawnPoint, Rarity } from '../types'
-import { randomPointInRadius, haversineDistance } from '../utils/geo'
+import { randomPointInRadius, randomPointInPolygon, haversineDistance } from '../utils/geo'
 import { rollCP, uid } from '../utils/random'
 import { useGameStore } from '../store/useGameStore'
 import { useAdminStore } from '../store/useAdminStore'
@@ -19,7 +19,6 @@ function rollRarityFromWeights(weights: Record<Rarity, number>): Rarity {
 }
 
 export function useSpawnManager(playerPosition: Position | null) {
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { spawns, addSpawn, removeSpawn, markSpawnDespawning, cleanExpiredSpawns } = useGameStore()
   const { creatures, spawnConfig, rarityWeights } = useAdminStore()
 
@@ -35,9 +34,21 @@ export function useSpawnManager(playerPosition: Position | null) {
     const creature = candidates[Math.floor(Math.random() * candidates.length)]
     
     // Ensure we don't spawn outside the despawnRange, causing an instant despawn
-    const maxRadius = Math.min(spawnConfig.spawnRadiusMax, spawnConfig.despawnRange)
-    const minRadius = Math.min(spawnConfig.spawnRadiusMin, maxRadius)
-    const spawnPos = randomPointInRadius(playerPosition, minRadius, maxRadius)
+    let spawnPos: Position | null = null;
+    
+    const { eventArea } = useAdminStore.getState();
+    if (eventArea.enabled && eventArea.polygon.length >= 3) {
+      // Spawn strictly within the event area
+      spawnPos = randomPointInPolygon(eventArea.polygon);
+    } 
+    
+    if (!spawnPos) {
+      // Original logic: spawn around player
+      const maxRadius = Math.min(spawnConfig.spawnRadiusMax, spawnConfig.despawnRange)
+      const minRadius = Math.min(spawnConfig.spawnRadiusMin, maxRadius)
+      spawnPos = randomPointInRadius(playerPosition, minRadius, maxRadius)
+    }
+
     const now = Date.now()
 
     const spawn: SpawnPoint = {
@@ -66,25 +77,30 @@ export function useSpawnManager(playerPosition: Position | null) {
     })
   }, [playerPosition, spawns, spawnConfig.despawnRange, markSpawnDespawning])
 
+  const burstHappened = useRef(false)
+
   // Periodic spawn & cleanup
   useEffect(() => {
-    // Initial burst — spawn a few right away
-    if (playerPosition && spawns.length === 0) {
-      const burstCount = 3 + Math.floor(Math.random() * 3)
-      for (let i = 0; i < burstCount; i++) {
-        setTimeout(() => trySpawn(), i * 300)
+    if (!playerPosition) return
+
+    // Ensure we have at least 3 creatures on first load/GPS acquisition
+    if (!burstHappened.current && spawns.length < 3) {
+      const needed = 3 - spawns.length
+      for (let i = 0; i < needed; i++) {
+        // We use a small delay between spawns to avoid potential coordinate collisions 
+        // if the random logic hits similar spots, though unlikely.
+        setTimeout(() => trySpawn(), i * 100)
       }
+      burstHappened.current = true
     }
 
-    intervalRef.current = setInterval(() => {
+    const interval = setInterval(() => {
       cleanExpiredSpawns()
       trySpawn()
     }, spawnConfig.spawnInterval)
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-  }, [playerPosition, trySpawn, cleanExpiredSpawns, spawns.length, spawnConfig.spawnInterval])
+    return () => clearInterval(interval)
+  }, [playerPosition, trySpawn, cleanExpiredSpawns, spawnConfig.spawnInterval]) // Removed spawns.length from deps to prevent re-runs on every spawn
 
   return { spawns, removeSpawn }
 }

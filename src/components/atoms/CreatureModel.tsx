@@ -1,7 +1,13 @@
 import { useGLTF } from '@react-three/drei'
-import { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useRef, useMemo } from 'react'
+import { useThree, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { KTX2Loader, MeshoptDecoder } from 'three-stdlib'
+
+// ─── Singleton Loader Store ───────────────────────────────────────
+// We keep these outside to prevent multiple worker pools and memory leaks
+// We initialize it immediately so we don't violate React's purity rules by reassigning it during render.
+const sharedKtx2Loader = new KTX2Loader().setTranscoderPath('/basis/')
 
 export interface CreatureBounds {
   halfWidth: number   // half-extent in X (left-right)
@@ -18,7 +24,20 @@ interface CreatureModelProps {
 }
 
 export default function CreatureModel({ url, onBoundsComputed, ...props }: CreatureModelProps) {
-  const { scene } = useGLTF(url)
+  const gl = useThree((state) => state.gl)
+  
+  // Memoize the loader setup to avoid re-initializing on every render
+  const ktx2 = useMemo(() => {
+    sharedKtx2Loader.detectSupport(gl)
+    return sharedKtx2Loader
+  }, [gl])
+
+  // Configure DRACO, KTX2 and Meshopt decoders from local public folder
+  const { scene } = useGLTF(url, '/draco/', undefined, (loader) => {
+    loader.setKTX2Loader(ktx2)
+    loader.setMeshoptDecoder(MeshoptDecoder)
+  })
+  
   const group = useRef<THREE.Group>(null)
   const boundsComputed = useRef(false)
 

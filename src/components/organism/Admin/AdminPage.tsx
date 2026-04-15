@@ -2,9 +2,10 @@ import { useState, useCallback, useRef } from 'react'
 import { Icon } from '@iconify/react'
 import { useAdminStore } from '../../../store/useAdminStore'
 import type { Creature, CreatureType, Rarity } from '../../../types'
+import AdminPolygonEditor from './AdminPolygonEditor'
 import './AdminPage.css'
 
-type AdminTab = 'creatures' | 'spawn' | 'rarity' | 'catch' | 'physics'
+type AdminTab = 'creatures' | 'spawn' | 'rarity' | 'catch' | 'physics' | 'area'
 
 const CREATURE_TYPES: CreatureType[] = ['fire', 'water', 'grass', 'electric', 'dark', 'normal']
 const RARITIES: Rarity[] = ['common', 'uncommon', 'rare', 'legendary']
@@ -43,20 +44,39 @@ function CreatureEditor({ creature, onSave, onClose }: CreatureEditorProps) {
     modelUrl: '',
   })
 
+  const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const updateField = <K extends keyof Creature>(key: K, value: Creature[K]) => {
     setForm(f => ({ ...f, [key]: value }))
   }
 
-  const handleModelUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleModelUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // For now, we store the file name and copy it to public/models
-    // In production, you'd upload to a server. For local dev, we use object URLs
-    const objectUrl = URL.createObjectURL(file)
-    updateField('modelUrl', objectUrl)
+    setUploading(true)
+    try {
+      const response = await fetch('/api/upload-model', {
+        method: 'POST',
+        headers: {
+          'x-filename': file.name
+        },
+        body: file // Stream binary data directly
+      })
+      
+      const result = await response.json()
+      if (result.success) {
+        updateField('modelUrl', result.url)
+      } else {
+        alert('Upload failed: ' + result.error)
+      }
+    } catch (err) {
+      console.error('Upload error:', err)
+      alert('Upload error. Check console for details.')
+    } finally {
+      setUploading(false)
+    }
   }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -176,10 +196,12 @@ function CreatureEditor({ creature, onSave, onClose }: CreatureEditorProps) {
               />
               <button
                 type="button"
-                className="upload-btn"
+                className={`upload-btn ${uploading ? 'uploading' : ''}`}
                 onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
               >
-                📁 Upload
+                <Icon icon={uploading ? "ph:spinner-gap-bold" : "ph:file-arrow-up-duotone"} className={uploading ? "spin" : ""} />
+                {uploading ? 'Uploading...' : '📁 Upload'}
               </button>
               <input
                 ref={fileInputRef}
@@ -189,8 +211,10 @@ function CreatureEditor({ creature, onSave, onClose }: CreatureEditorProps) {
                 style={{ display: 'none' }}
               />
             </div>
-            {form.modelUrl && (
-              <span className="model-status">✅ Model set</span>
+            {form.modelUrl && !uploading && (
+              <span className="model-status">
+                {form.modelUrl.startsWith('blob:') ? '⚠️ Temporary (Re-upload recommended)' : '✅ Permanent Path Set'}
+              </span>
             )}
           </div>
 
@@ -221,6 +245,8 @@ export default function AdminPage() {
   const [localCatchConfig, setLocalCatchConfig] = useState(adminStore.catchConfig)
   const [localEncounterPhysics, setLocalEncounterPhysics] = useState(adminStore.encounterPhysics)
   const [localDebugSettings, setLocalDebugSettings] = useState(adminStore.debugSettings)
+  const [localEventArea, setLocalEventArea] = useState(adminStore.eventArea)
+  const [localMapConfig, setLocalMapConfig] = useState(adminStore.mapConfig)
 
   // Re-sync if store changes externally (avoiding useEffect for synchronous setState)
   const [prevSyncData, setPrevSyncData] = useState({
@@ -228,7 +254,9 @@ export default function AdminPage() {
     rarity: adminStore.rarityWeights,
     catch: adminStore.catchConfig,
     physics: adminStore.encounterPhysics,
-    debug: adminStore.debugSettings
+    debug: adminStore.debugSettings,
+    area: adminStore.eventArea,
+    mapConfig: adminStore.mapConfig
   })
 
   if (
@@ -236,20 +264,26 @@ export default function AdminPage() {
     adminStore.rarityWeights !== prevSyncData.rarity ||
     adminStore.catchConfig !== prevSyncData.catch ||
     adminStore.encounterPhysics !== prevSyncData.physics ||
-    adminStore.debugSettings !== prevSyncData.debug
+    adminStore.debugSettings !== prevSyncData.debug ||
+    adminStore.eventArea !== prevSyncData.area ||
+    adminStore.mapConfig !== prevSyncData.mapConfig
   ) {
     setPrevSyncData({
       spawn: adminStore.spawnConfig,
       rarity: adminStore.rarityWeights,
       catch: adminStore.catchConfig,
       physics: adminStore.encounterPhysics,
-      debug: adminStore.debugSettings
+      debug: adminStore.debugSettings,
+      area: adminStore.eventArea,
+      mapConfig: adminStore.mapConfig
     })
     setLocalSpawnConfig(adminStore.spawnConfig)
     setLocalRarityWeights(adminStore.rarityWeights)
     setLocalCatchConfig(adminStore.catchConfig)
     setLocalEncounterPhysics(adminStore.encounterPhysics)
     setLocalDebugSettings(adminStore.debugSettings)
+    setLocalEventArea(adminStore.eventArea)
+    setLocalMapConfig(adminStore.mapConfig)
   }
 
   const handleSaveCreature = useCallback((creature: Creature) => {
@@ -281,6 +315,10 @@ export default function AdminPage() {
         case 'rarity': adminStore.resetRarityWeights(); break;
         case 'catch': adminStore.resetCatchConfig(); break;
         case 'physics': adminStore.resetEncounterPhysics(); break;
+        case 'area': 
+          adminStore.resetEventArea(); 
+          adminStore.resetMapConfig(); 
+          break;
       }
     }
   }, [adminStore])
@@ -291,8 +329,10 @@ export default function AdminPage() {
     adminStore.setCatchConfig(localCatchConfig)
     adminStore.setEncounterPhysics(localEncounterPhysics)
     adminStore.setDebugSettings(localDebugSettings)
+    adminStore.setEventArea(localEventArea)
+    adminStore.setMapConfig(localMapConfig)
     alert('Changes applied & saved successfully!')
-  }, [adminStore, localSpawnConfig, localRarityWeights, localCatchConfig, localEncounterPhysics, localDebugSettings])
+  }, [adminStore, localSpawnConfig, localRarityWeights, localCatchConfig, localEncounterPhysics, localDebugSettings, localEventArea, localMapConfig])
 
   const tabs: { id: AdminTab; icon: string; label: string }[] = [
     { id: 'creatures', icon: 'ph:paw-print-duotone', label: 'Creatures' },
@@ -300,6 +340,7 @@ export default function AdminPage() {
     { id: 'rarity', icon: 'ph:dice-five-duotone', label: 'Rarity' },
     { id: 'catch', icon: 'ph:target-duotone', label: 'Catch' },
     { id: 'physics', icon: 'ph:atom-duotone', label: 'Physics' },
+    { id: 'area', icon: 'ph:polygon-duotone', label: 'Area & Map' },
   ]
 
 
@@ -1009,7 +1050,109 @@ export default function AdminPage() {
             </div>
           </div>
         )}
-        
+
+        {/* ── Area & Map Tab ─────────────────────── */}
+        {activeTab === 'area' && (
+          <div className="admin-section">
+            <div className="section-header">
+              <h2>Event Area & Map</h2>
+              <button className="btn-secondary btn-mini" onClick={() => handleResetSection('area')}>
+                <Icon icon="ph:arrows-counter-clockwise-bold" />
+                Reset Defaults
+              </button>
+            </div>
+            
+            <div className="settings-grid">
+              <div className="setting-item" style={{ gridColumn: '1 / -1' }}>
+                <label className="debug-toggle" style={{ margin: 0, justifyContent: 'flex-start' }}>
+                  <input
+                    type="checkbox"
+                    checked={localEventArea.enabled}
+                    onChange={e => setLocalEventArea({ ...localEventArea, enabled: e.target.checked })}
+                  />
+                  <span className="debug-label">Enable Event Play Area</span>
+                </label>
+                <p className="setting-desc" style={{ marginTop: '8px' }}>
+                  Jika diaktifkan, creature hanya akan spawn di dalam radius lingkaran ini. Pemain dapat melihat batas event ini di map.
+                </p>
+              </div>
+
+              {localEventArea.enabled && (
+                <AdminPolygonEditor 
+                  polygon={localEventArea.polygon}
+                  color={localEventArea.color}
+                  opacity={localEventArea.opacity}
+                  onChange={(poly) => setLocalEventArea({ ...localEventArea, polygon: poly })}
+                />
+              )}
+
+              <div className="setting-item" style={{ gridColumn: '1 / -1', marginTop: '16px' }}>
+                <label>Area Color & Opacity</label>
+                <p className="section-desc">Pilih warna dan tingkat transparansi untuk visualisasi area event di map.</p>
+                <div className="setting-control" style={{ gap: '20px' }}>
+                  <input
+                    type="color"
+                    value={localEventArea.color || '#4ecdc4'}
+                    onChange={e => setLocalEventArea({ ...localEventArea, color: e.target.value })}
+                    style={{ width: '60px', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                  />
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Icon icon="ph:ghost-duotone" />
+                    <input
+                      type="range"
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={localEventArea.opacity ?? 0.2}
+                      onChange={e => setLocalEventArea({ ...localEventArea, opacity: Number(e.target.value) })}
+                    />
+                    <span className="setting-value">{Math.round((localEventArea.opacity ?? 0.2) * 100)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr className="section-divider" style={{ margin: '32px 0' }} />
+
+            <div className="section-header">
+              <h2>Map Config (Recenter Button)</h2>
+            </div>
+            <p className="section-desc">Default posisi kamera saat map pertama kali dibuka atau tombol recenter ditekan.</p>
+            
+            <div className="settings-grid">
+              <div className="setting-item">
+                <label>Default Zoom</label>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={14}
+                    max={20}
+                    step={0.1}
+                    value={localMapConfig.defaultZoom}
+                    onChange={e => setLocalMapConfig({ ...localMapConfig, defaultZoom: Number(e.target.value) })}
+                  />
+                  <span className="setting-value">{localMapConfig.defaultZoom}x</span>
+                </div>
+              </div>
+              
+              <div className="setting-item">
+                <label>Default Pitch (Tilt)</label>
+                <div className="setting-control">
+                  <input
+                    type="range"
+                    min={0}
+                    max={85}
+                    step={1}
+                    value={localMapConfig.defaultPitch}
+                    onChange={e => setLocalMapConfig({ ...localMapConfig, defaultPitch: Number(e.target.value) })}
+                  />
+                  <span className="setting-value">{localMapConfig.defaultPitch}°</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
         </div>
       </main>
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Creature } from '../types'
+import type { Creature, Position } from '../types'
 import { CREATURES } from '../config/creatures'
 import {
   SPAWN_RADIUS_MIN, SPAWN_RADIUS_MAX, MAX_ACTIVE_SPAWNS,
@@ -59,6 +59,18 @@ export interface DebugSettings {
   physics: boolean
 }
 
+export interface EventAreaConfig {
+  enabled: boolean
+  polygon: Position[] // Array of vertex coordinates defining the playable area
+  color: string       // Hex color for the area visualization
+  opacity: number     // Opacity for the area fill (0-1)
+}
+
+export interface MapConfig {
+  defaultZoom: number
+  defaultPitch: number
+}
+
 interface AdminStore {
   // Data
   creatures: Creature[]
@@ -67,6 +79,8 @@ interface AdminStore {
   catchConfig: CatchConfig
   encounterPhysics: EncounterPhysicsConfig
   debugSettings: DebugSettings
+  eventArea: EventAreaConfig
+  mapConfig: MapConfig
 
   // Creature CRUD
   addCreature: (creature: Creature) => void
@@ -79,6 +93,8 @@ interface AdminStore {
   setCatchConfig: (config: Partial<CatchConfig>) => void
   setEncounterPhysics: (config: Partial<EncounterPhysicsConfig>) => void
   setDebugSettings: (settings: Partial<DebugSettings>) => void
+  setEventArea: (config: Partial<EventAreaConfig>) => void
+  setMapConfig: (config: Partial<MapConfig>) => void
 
   // Reset
   resetToDefaults: () => void
@@ -87,6 +103,8 @@ interface AdminStore {
   resetRarityWeights: () => void
   resetCatchConfig: () => void
   resetEncounterPhysics: () => void
+  resetEventArea: () => void
+  resetMapConfig: () => void
 
   // Persistence
   loadAdminConfig: () => void
@@ -99,6 +117,8 @@ async function saveAdminConfig(state: {
   catchConfig: CatchConfig
   encounterPhysics: EncounterPhysicsConfig
   debugSettings: DebugSettings
+  eventArea: EventAreaConfig
+  mapConfig: MapConfig
 }) {
   try {
     await fetch('/api/admin-config', {
@@ -118,6 +138,8 @@ async function loadAdminConfigFromServer(): Promise<Partial<{
   catchConfig: CatchConfig
   encounterPhysics: EncounterPhysicsConfig
   debugSettings: DebugSettings
+  eventArea: EventAreaConfig
+  mapConfig: MapConfig
 }> | null> {
   try {
     const res = await fetch('/api/admin-config')
@@ -179,6 +201,18 @@ const defaultDebugSettings: DebugSettings = {
   physics: false,
 }
 
+const defaultEventArea: EventAreaConfig = {
+  enabled: false,
+  polygon: [],
+  color: '#4ecdc4',
+  opacity: 0.2,
+}
+
+const defaultMapConfig: MapConfig = {
+  defaultZoom: 16.5,
+  defaultPitch: 60,
+}
+
 // ─── Store ──────────────────────────────────────────────────────────
 export const useAdminStore = create<AdminStore>((set) => ({
   creatures: [...CREATURES],
@@ -187,6 +221,8 @@ export const useAdminStore = create<AdminStore>((set) => ({
   catchConfig: { ...defaultCatchConfig },
   encounterPhysics: { ...defaultEncounterPhysics },
   debugSettings: { ...defaultDebugSettings },
+  eventArea: { ...defaultEventArea },
+  mapConfig: { ...defaultMapConfig },
 
   addCreature: (creature) => {
     set((s) => {
@@ -254,6 +290,22 @@ export const useAdminStore = create<AdminStore>((set) => ({
     })
   },
 
+  setEventArea: (config) => {
+    set((s) => {
+      const eventArea = { ...s.eventArea, ...config }
+      saveAdminConfig({ ...s, eventArea })
+      return { eventArea }
+    })
+  },
+
+  setMapConfig: (config) => {
+    set((s) => {
+      const mapConfig = { ...s.mapConfig, ...config }
+      saveAdminConfig({ ...s, mapConfig })
+      return { mapConfig }
+    })
+  },
+
   resetCreatures: () => {
     set((s) => {
       const creatures = [...CREATURES]
@@ -294,6 +346,22 @@ export const useAdminStore = create<AdminStore>((set) => ({
     })
   },
 
+  resetEventArea: () => {
+    set((s) => {
+      const eventArea = { ...defaultEventArea }
+      saveAdminConfig({ ...s, eventArea })
+      return { eventArea }
+    })
+  },
+
+  resetMapConfig: () => {
+    set((s) => {
+      const mapConfig = { ...defaultMapConfig }
+      saveAdminConfig({ ...s, mapConfig })
+      return { mapConfig }
+    })
+  },
+
   resetToDefaults: () => {
     const defaults = {
       creatures: [...CREATURES],
@@ -302,6 +370,8 @@ export const useAdminStore = create<AdminStore>((set) => ({
       catchConfig: { ...defaultCatchConfig },
       encounterPhysics: { ...defaultEncounterPhysics },
       debugSettings: { ...defaultDebugSettings },
+      eventArea: { ...defaultEventArea },
+      mapConfig: { ...defaultMapConfig },
     }
     saveAdminConfig(defaults)
     set(defaults)
@@ -317,6 +387,8 @@ export const useAdminStore = create<AdminStore>((set) => ({
         catchConfig: saved.catchConfig ? { ...defaultCatchConfig, ...saved.catchConfig } : { ...defaultCatchConfig },
         encounterPhysics: saved.encounterPhysics ? { ...defaultEncounterPhysics, ...saved.encounterPhysics } : { ...defaultEncounterPhysics },
         debugSettings: saved.debugSettings ? { ...defaultDebugSettings, ...saved.debugSettings } : { ...defaultDebugSettings },
+        eventArea: saved.eventArea ? { ...defaultEventArea, ...saved.eventArea } : { ...defaultEventArea },
+        mapConfig: saved.mapConfig ? { ...defaultMapConfig, ...saved.mapConfig } : { ...defaultMapConfig },
       })
     }
   },
