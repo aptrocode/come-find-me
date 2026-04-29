@@ -12,6 +12,8 @@ import AdminRaritySettings from '../components/organism/AdminRaritySettings'
 import AdminCatchSettings from '../components/organism/AdminCatchSettings'
 import AdminPhysicsSettings from '../components/organism/AdminPhysicsSettings'
 import AdminAreaSettings from '../components/organism/AdminAreaSettings'
+import AdminMapStyleSettings from '../components/organism/AdminMapStyleSettings'
+import AdminPlayerSettings from '../components/organism/AdminPlayerSettings'
 import ConfirmModal, { type ConfirmModalProps } from '../components/molecules/ConfirmModal'
 
 import './admin.css'
@@ -22,6 +24,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadAdminConfig()
+    document.title = 'Admin Dashboard | First See Mie'
   }, [loadAdminConfig])
 
   const [activeTab, setActiveTab] = useState<AdminTab>('creatures')
@@ -39,6 +42,7 @@ export default function AdminPage() {
   const [localDebugSettings, setLocalDebugSettings] = useState(adminStore.debugSettings)
   const [localEventArea, setLocalEventArea] = useState(adminStore.eventArea)
   const [localMapConfig, setLocalMapConfig] = useState(adminStore.mapConfig)
+  const [localPlayerConfig, setLocalPlayerConfig] = useState(adminStore.playerConfig)
 
   const [prevSyncData, setPrevSyncData] = useState({
     spawn: adminStore.spawnConfig,
@@ -47,7 +51,8 @@ export default function AdminPage() {
     physics: adminStore.encounterPhysics,
     debug: adminStore.debugSettings,
     area: adminStore.eventArea,
-    mapConfig: adminStore.mapConfig
+    mapConfig: adminStore.mapConfig,
+    playerConfig: adminStore.playerConfig
   })
 
   // Sync local buffer if store was updated externally (e.g. initial load)
@@ -58,7 +63,8 @@ export default function AdminPage() {
     adminStore.encounterPhysics !== prevSyncData.physics ||
     adminStore.debugSettings !== prevSyncData.debug ||
     adminStore.eventArea !== prevSyncData.area ||
-    adminStore.mapConfig !== prevSyncData.mapConfig
+    adminStore.mapConfig !== prevSyncData.mapConfig ||
+    adminStore.playerConfig !== prevSyncData.playerConfig
   ) {
     setPrevSyncData({
       spawn: adminStore.spawnConfig,
@@ -67,7 +73,8 @@ export default function AdminPage() {
       physics: adminStore.encounterPhysics,
       debug: adminStore.debugSettings,
       area: adminStore.eventArea,
-      mapConfig: adminStore.mapConfig
+      mapConfig: adminStore.mapConfig,
+      playerConfig: adminStore.playerConfig
     })
     setLocalSpawnConfig(adminStore.spawnConfig)
     setLocalRarityWeights(adminStore.rarityWeights)
@@ -76,6 +83,7 @@ export default function AdminPage() {
     setLocalDebugSettings(adminStore.debugSettings)
     setLocalEventArea(adminStore.eventArea)
     setLocalMapConfig(adminStore.mapConfig)
+    setLocalPlayerConfig(adminStore.playerConfig)
   }
 
   const handleSaveCreature = useCallback((creature: Creature) => {
@@ -120,7 +128,9 @@ export default function AdminPage() {
       rarity: 'Rarity Weights',
       catch: 'Catch Logic',
       physics: 'Encounter Physics',
-      area: 'Map & Area'
+      area: 'Map & Area',
+      style: 'Map Style',
+      player: 'Player Model'
     }
 
     setConfirmState({
@@ -140,6 +150,8 @@ export default function AdminPage() {
             adminStore.resetEventArea(); 
             adminStore.resetMapConfig(); 
             break;
+          case 'style': adminStore.resetMapConfig(); break;
+          case 'player': adminStore.resetPlayerConfig(); break;
         }
       },
       onClose: () => setConfirmState(null)
@@ -170,6 +182,7 @@ export default function AdminPage() {
     compare(adminStore.encounterPhysics, localEncounterPhysics, 'Physics')
     compare(adminStore.eventArea, localEventArea, 'Area')
     compare(adminStore.mapConfig, localMapConfig, 'Map')
+    compare(adminStore.playerConfig, localPlayerConfig, 'Player')
 
     if (changes.length === 0) {
       setConfirmState({
@@ -200,6 +213,7 @@ export default function AdminPage() {
         adminStore.setDebugSettings(localDebugSettings)
         adminStore.setEventArea(localEventArea)
         adminStore.setMapConfig(localMapConfig)
+        adminStore.setPlayerConfig(localPlayerConfig)
         alert('Changes applied & saved successfully!')
       },
       onClose: () => setConfirmState(null),
@@ -218,7 +232,7 @@ export default function AdminPage() {
         </div>
       )
     })
-  }, [adminStore, localSpawnConfig, localRarityWeights, localCatchConfig, localEncounterPhysics, localDebugSettings, localEventArea, localMapConfig])
+  }, [adminStore, localSpawnConfig, localRarityWeights, localCatchConfig, localEncounterPhysics, localDebugSettings, localEventArea, localMapConfig, localPlayerConfig])
 
   return (
     <div className="admin-layout">
@@ -313,6 +327,22 @@ export default function AdminPage() {
               onAreaChange={setLocalEventArea}
               onMapChange={setLocalMapConfig}
               onReset={() => handleResetSection('area')}
+            />
+          )}
+
+          {activeTab === 'style' && (
+            <AdminMapStyleSettings
+              mapConfig={localMapConfig}
+              onMapChange={setLocalMapConfig}
+              onReset={() => handleResetSection('style')}
+            />
+          )}
+
+          {activeTab === 'player' && (
+            <AdminPlayerSettings
+              config={localPlayerConfig}
+              onChange={setLocalPlayerConfig}
+              onReset={() => handleResetSection('player')}
             />
           )}
         </div>

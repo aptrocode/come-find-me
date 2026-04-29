@@ -12,6 +12,20 @@ export function haversineDistance(a: Position, b: Position): number {
   return 2 * EARTH_RADIUS * Math.asin(Math.sqrt(h))
 }
 
+/** Calculate initial bearing from point A to point B in degrees (0-360) */
+export function calculateBearing(a: Position, b: Position): number {
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const dLng = toRad(b.lng - a.lng);
+
+  const y = Math.sin(dLng) * Math.cos(lat2);
+  const x = Math.cos(lat1) * Math.sin(lat2) -
+            Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+
+  const brng = toDeg(Math.atan2(y, x));
+  return (brng + 360) % 360;
+}
+
 /** Generate a random point within a given radius (meters) from center */
 export function randomPointInRadius(center: Position, minRadius: number, maxRadius: number): Position {
   const radius = minRadius + Math.random() * (maxRadius - minRadius)

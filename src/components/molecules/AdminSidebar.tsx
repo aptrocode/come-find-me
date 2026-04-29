@@ -1,7 +1,7 @@
 import { Icon } from '@iconify/react'
 import './AdminSidebar.css'
 
-export type AdminTab = 'creatures' | 'spawn' | 'rarity' | 'catch' | 'physics' | 'area'
+export type AdminTab = 'creatures' | 'spawn' | 'rarity' | 'catch' | 'physics' | 'area' | 'player' | 'style'
 
 interface SidebarTab {
   id: AdminTab
@@ -47,7 +47,11 @@ export default function AdminSidebar({
     },
     {
       title: 'World & Map',
-      tabs: [{ id: 'area', icon: 'ph:polygon-duotone', label: 'Area & Map' }]
+      tabs: [
+        { id: 'area', icon: 'ph:polygon-duotone', label: 'Area & Map' },
+        { id: 'style', icon: 'ph:palette-duotone', label: 'Map Style' },
+        { id: 'player', icon: 'ph:user-circle-duotone', label: 'Player Model' }
+      ]
     }
   ]
 

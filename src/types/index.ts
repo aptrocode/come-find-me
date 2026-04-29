@@ -116,5 +116,16 @@ export interface EventAreaConfig {
 export interface MapConfig {
   defaultZoom: number
   defaultPitch: number
+  defaultBearing: number
+  styleUrl?: string
+  lightPreset?: 'day' | 'dusk' | 'dawn' | 'night'
+  showLabels?: boolean
+}
+
+export interface PlayerConfig {
+  scale: number
+  positionX: number
+  positionY: number
+  positionZ: number
 }
 

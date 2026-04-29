@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { 
   Creature, SpawnConfig, RarityWeights, 
   CatchConfig, EncounterPhysicsConfig, DebugSettings, 
-  EventAreaConfig, MapConfig 
+  EventAreaConfig, MapConfig, PlayerConfig
 } from '../types'
 import { CREATURES } from '../config/creatures'
 import {
@@ -26,6 +26,7 @@ interface AdminStore {
   debugSettings: DebugSettings
   eventArea: EventAreaConfig
   mapConfig: MapConfig
+  playerConfig: PlayerConfig
 
   // Creature CRUD
   addCreature: (creature: Creature) => void
@@ -40,6 +41,7 @@ interface AdminStore {
   setDebugSettings: (settings: Partial<DebugSettings>) => void
   setEventArea: (config: Partial<EventAreaConfig>) => void
   setMapConfig: (config: Partial<MapConfig>) => void
+  setPlayerConfig: (config: Partial<PlayerConfig>) => void
   setLastZoom: (zoom: number) => void
 
   // Reset
@@ -51,6 +53,7 @@ interface AdminStore {
   resetEncounterPhysics: () => void
   resetEventArea: () => void
   resetMapConfig: () => void
+  resetPlayerConfig: () => void
 
   // Persistence
   loadAdminConfig: () => void
@@ -65,6 +68,7 @@ async function saveAdminConfig(state: {
   debugSettings: DebugSettings
   eventArea: EventAreaConfig
   mapConfig: MapConfig
+  playerConfig: PlayerConfig
 }) {
   try {
     await fetch('/api/admin-config', {
@@ -86,6 +90,7 @@ async function loadAdminConfigFromServer(): Promise<Partial<{
   debugSettings: DebugSettings
   eventArea: EventAreaConfig
   mapConfig: MapConfig
+  playerConfig: PlayerConfig
 }> | null> {
   try {
     const res = await fetch('/api/admin-config')
@@ -157,6 +162,17 @@ const defaultEventArea: EventAreaConfig = {
 const defaultMapConfig: MapConfig = {
   defaultZoom: 16.5,
   defaultPitch: 60,
+  defaultBearing: 0,
+  styleUrl: 'mapbox://styles/mapbox/standard',
+  lightPreset: 'dusk',
+  showLabels: true,
+}
+
+const defaultPlayerConfig: PlayerConfig = {
+  scale: 2,
+  positionX: 0,
+  positionY: -1,
+  positionZ: 0,
 }
 
 const STORAGE_KEY_ZOOM = 'fsm_last_zoom'
@@ -171,6 +187,7 @@ export const useAdminStore = create<AdminStore>((set) => ({
   debugSettings: { ...defaultDebugSettings },
   eventArea: { ...defaultEventArea },
   mapConfig: { ...defaultMapConfig },
+  playerConfig: { ...defaultPlayerConfig },
   
   setLastZoom: (zoom) => {
     localStorage.setItem(STORAGE_KEY_ZOOM, zoom.toString())
@@ -252,13 +269,17 @@ export const useAdminStore = create<AdminStore>((set) => ({
     })
   },
 
-  setMapConfig: (config) => {
-    set((s) => {
-      const mapConfig = { ...s.mapConfig, ...config }
-      saveAdminConfig({ ...s, mapConfig })
-      return { mapConfig }
-    })
-  },
+  setMapConfig: (config) => set((state) => {
+    const newState = { mapConfig: { ...state.mapConfig, ...config } }
+    saveAdminConfig({ ...state, ...newState })
+    return newState
+  }),
+
+  setPlayerConfig: (config) => set((state) => {
+    const newState = { playerConfig: { ...state.playerConfig, ...config } }
+    saveAdminConfig({ ...state, ...newState })
+    return newState
+  }),
 
   resetCreatures: () => {
     set((s) => {
@@ -308,13 +329,17 @@ export const useAdminStore = create<AdminStore>((set) => ({
     })
   },
 
-  resetMapConfig: () => {
-    set((s) => {
-      const mapConfig = { ...defaultMapConfig }
-      saveAdminConfig({ ...s, mapConfig })
-      return { mapConfig }
-    })
-  },
+  resetMapConfig: () => set((state) => {
+    const newState = { mapConfig: defaultMapConfig }
+    saveAdminConfig({ ...state, ...newState })
+    return newState
+  }),
+
+  resetPlayerConfig: () => set((state) => {
+    const newState = { playerConfig: defaultPlayerConfig }
+    saveAdminConfig({ ...state, ...newState })
+    return newState
+  }),
 
   resetToDefaults: () => {
     const defaults = {
@@ -326,6 +351,7 @@ export const useAdminStore = create<AdminStore>((set) => ({
       debugSettings: { ...defaultDebugSettings },
       eventArea: { ...defaultEventArea },
       mapConfig: { ...defaultMapConfig },
+      playerConfig: { ...defaultPlayerConfig },
     }
     saveAdminConfig(defaults)
     set(defaults)
@@ -343,6 +369,7 @@ export const useAdminStore = create<AdminStore>((set) => ({
         debugSettings: saved.debugSettings ? { ...defaultDebugSettings, ...saved.debugSettings } : { ...defaultDebugSettings },
         eventArea: saved.eventArea ? { ...defaultEventArea, ...saved.eventArea } : { ...defaultEventArea },
         mapConfig: saved.mapConfig ? { ...defaultMapConfig, ...saved.mapConfig } : { ...defaultMapConfig },
+        playerConfig: saved.playerConfig ? { ...defaultPlayerConfig, ...saved.playerConfig } : { ...defaultPlayerConfig },
       })
     }
   },

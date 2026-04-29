@@ -19,6 +19,7 @@ export default function HomePage() {
   useEffect(() => {
     loadSave()
     loadAdminConfig()
+    document.title = 'First See Mie'
     const interval = setInterval(loadAdminConfig, 10000)
     return () => clearInterval(interval)
   }, [loadSave, loadAdminConfig])

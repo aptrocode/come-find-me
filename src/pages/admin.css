@@ -133,27 +133,61 @@
 
 .btn-add:hover {
   background: rgba(253, 185, 19, 0.2);
-  transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(253, 185, 19, 0.2);
 }
 
-.num-input {
+.num-input,
+.setting-input {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid var(--admin-border);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   outline: none;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-.num-input:focus {
-  border-color: var(--admin-accent);
-  background: rgba(78, 205, 196, 0.05);
-  box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.1);
+.num-input:focus,
+.setting-input:focus {
+  border-color: var(--admin-secondary);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 4px rgba(253, 185, 19, 0.1);
+}
+
+select.setting-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+select.setting-input option {
+  background-color: #0b0f24;
+  color: #fff;
+}
+
+.toggle-btn {
+  padding: 10px 24px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--admin-text-dim);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn.active {
+  background: rgba(78, 205, 196, 0.15);
+  color: #4ecdc4;
+  border-color: #4ecdc4;
+  box-shadow: 0 0 15px rgba(78, 205, 196, 0.2);
 }
 
 /* ─── Global Responsive Transitions ─── */

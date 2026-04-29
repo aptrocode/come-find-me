@@ -1,26 +1,33 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
+import { createPortal } from "react-dom";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useGeolocation } from "../../../hooks/useGeolocation";
 import { useMapbox } from "../../../hooks/useMapbox";
 import { useSpawnManager } from "../../../hooks/useSpawnManager";
 import { useGameStore } from "../../../store/useGameStore";
-import { isWithinRange } from "../../../utils/geo";
+import { isWithinRange, calculateBearing, haversineDistance } from "../../../utils/geo";
 import { ENCOUNTER_RANGE, MAP_UPDATE_THROTTLE } from "../../../config/constants";
-import type { SpawnPoint } from "../../../types";
+import type { SpawnPoint, Position } from "../../../types";
 import { useAdminStore } from "../../../store/useAdminStore";
 import LoadingScreen from "../../molecules/UI/LoadingScreen";
+import Player3DMarker from "../../atoms/Player3DMarker";
 
 export default function GameMap() {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const creatureMarkersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
   const lastUpdateRef = useRef<number>(0);
+  const previousPosRef = useRef<Position | null>(null);
+  
+  const [playerMarkerEl, setPlayerMarkerEl] = useState<HTMLDivElement | null>(null);
+  const [playerHeading, setPlayerHeading] = useState(0);
 
   const { position, error, loading } = useGeolocation();
   const { map, mapReady } = useMapbox({ containerRef, position });
   const { spawns } = useSpawnManager(position);
   const { startEncounter, activeEncounter, encounterPhase, setEncounterPhase } = useGameStore();
-  const { eventArea, mapConfig } = useAdminStore();
+  const { eventArea, mapConfig, playerConfig } = useAdminStore();
 
   const handleCreatureTap = useCallback(
     (spawn: SpawnPoint) => {
@@ -62,7 +69,7 @@ export default function GameMap() {
         center: [position.lng, position.lat],
         zoom: targetZoom,
         pitch: mapConfig.defaultPitch,
-        bearing: 0,
+        bearing: mapConfig.defaultBearing ?? 0,
         duration: 1500,
       });
     }
@@ -84,17 +91,30 @@ export default function GameMap() {
     if (now - lastUpdateRef.current < MAP_UPDATE_THROTTLE) return;
     lastUpdateRef.current = now;
 
+    // Calculate heading based on movement direction
+    if (previousPosRef.current) {
+      const dist = haversineDistance(previousPosRef.current, position);
+      if (dist > 0.5) { // Only update heading if moved more than 0.5 meters to avoid jitter
+        const newHeading = calculateBearing(previousPosRef.current, position);
+        setPlayerHeading(newHeading);
+        previousPosRef.current = position;
+      }
+    } else {
+      previousPosRef.current = position;
+    }
+
     if (!playerMarkerRef.current) {
-      // Create player marker
+      // Create player marker container for the 3D model portal
       const el = document.createElement("div");
-      el.className = "player-marker";
-      el.innerHTML = `
-        <div class="player-pulse"></div>
-        <div class="player-dot"></div>
-      `;
+      el.className = "player-marker-3d-container";
+      el.style.width = "0px";
+      el.style.height = "0px";
+      
       playerMarkerRef.current = new mapboxgl.Marker({ element: el })
         .setLngLat([position.lng, position.lat])
         .addTo(map);
+
+      setPlayerMarkerEl(el);
 
       // Center map on player initially, respecting last zoom
       const savedZoom = localStorage.getItem('fsm_last_zoom');
@@ -109,14 +129,15 @@ export default function GameMap() {
         ? "none"
         : "block";
     }
-  }, [map, mapReady, position, encounterPhase]);
+  }, [map, mapReady, position, encounterPhase, mapConfig.defaultZoom]);
 
-  // Setup Mapbox Source and Layers for creatures
+  // Setup Event Area Source and Layers
   useEffect(() => {
     if (!map || !mapReady) return;
 
-    if (!map.getSource("creature-spawns")) {
-      map.addSource("creature-spawns", {
+    // Event Area Source & Layer
+    if (!map.getSource("event-area")) {
+      map.addSource("event-area", {
         type: "geojson",
         data: {
           type: "FeatureCollection",
@@ -124,101 +145,30 @@ export default function GameMap() {
         },
       });
 
-      // Event Area Source & Layer
-      if (!map.getSource("event-area")) {
-        map.addSource("event-area", {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: [],
-          },
-        });
-
-        // Add area fill
-        map.addLayer({
-          id: "event-area-fill",
-          type: "fill",
-          source: "event-area",
-          paint: {
-            "fill-color": eventArea.color || "#4ecdc4",
-            "fill-opacity": eventArea.opacity ?? 0.1,
-          },
-        });
-
-        // Add area border
-        map.addLayer({
-          id: "event-area-border",
-          type: "line",
-          source: "event-area",
-          paint: {
-            "line-color": eventArea.color || "#4ecdc4",
-            "line-width": 3,
-            "line-opacity": 0.5,
-          },
-        });
-      }
-
-      // Glow layer
+      // Add area fill
       map.addLayer({
-        id: "creature-glow-layer",
-        type: "circle",
-        source: "creature-spawns",
+        id: "event-area-fill",
+        type: "fill",
+        source: "event-area",
         paint: {
-          "circle-color": ["get", "color"],
-          "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            14, ["*", 15, ["coalesce", ["get", "scale"], 1]],
-            19, ["*", 30, ["coalesce", ["get", "scale"], 1]]
-          ],
-          "circle-opacity": ["*", ["coalesce", ["get", "scale"], 1], 0.4],
-          "circle-blur": 0.5,
+          "fill-color": eventArea.color || "#4ecdc4",
+          "fill-opacity": eventArea.opacity ?? 0.1,
         },
       });
 
-      // Symbol layer for emoji
-      if (!map.getLayer("creature-symbol-layer")) {
-        map.addLayer({
-          id: "creature-symbol-layer",
-          type: "symbol",
-          source: "creature-spawns",
-          layout: {
-            "icon-image": ["get", "emoji"],
-            "icon-size": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              14, ["*", 0.5, ["coalesce", ["get", "scale"], 1]],
-              19, ["*", 1.2, ["coalesce", ["get", "scale"], 1]]
-            ],
-            "icon-allow-overlap": true,
-            "icon-ignore-placement": true,
-          },
-          paint: {
-            "icon-opacity": ["coalesce", ["get", "scale"], 1]
-          }
-        });
-        
-        // Click handler
-        map.on("click", "creature-symbol-layer", (e) => {
-          if (!e.features || !e.features[0]) return;
-          const feature = e.features[0];
-          const spawnId = feature.properties?.id;
-          
-          const spawn = useGameStore.getState().spawns.find(s => s.id === spawnId);
-          if (spawn) handleCreatureTap(spawn);
-        });
-        
-        map.on("mouseenter", "creature-symbol-layer", () => {
-          map.getCanvas().style.cursor = "pointer";
-        });
-        map.on("mouseleave", "creature-symbol-layer", () => {
-          map.getCanvas().style.cursor = "";
-        });
-      }
+      // Add area border
+      map.addLayer({
+        id: "event-area-border",
+        type: "line",
+        source: "event-area",
+        paint: {
+          "line-color": eventArea.color || "#4ecdc4",
+          "line-width": 3,
+          "line-opacity": 0.5,
+        },
+      });
     }
-  }, [map, mapReady, handleCreatureTap, eventArea.color, eventArea.opacity]);
+  }, [map, mapReady, eventArea.color, eventArea.opacity]);
 
   // Update Event Area geometry
   useEffect(() => {
@@ -265,102 +215,61 @@ export default function GameMap() {
     }
   }, [map, mapReady, eventArea]);
 
-  // Update GeoJSON data when spawns change
+  // Update creature DOM markers
   useEffect(() => {
     if (!map || !mapReady) return;
 
-    let animationFrameId: number;
+    const currentMarkerIds = new Set<string>();
 
-    const renderSpawns = () => {
-      try {
-        const source = map.getSource("creature-spawns") as mapboxgl.GeoJSONSource;
-        if (!source) return;
-
-        // Ensure all emojis in spawns have been added as images
-        spawns.forEach(spawn => {
-          const emoji = spawn.creature.emoji;
-          if (emoji && !map.hasImage(emoji)) {
-            const size = 64;
-            const canvas = document.createElement("canvas");
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext("2d");
-            if (ctx) {
-              ctx.shadowColor = "rgba(0,0,0,0.5)";
-              ctx.shadowBlur = 4;
-              ctx.shadowOffsetY = 2;
-              ctx.font = "46px 'Apple Color Emoji', 'Segoe UI Emoji', Arial, sans-serif";
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(emoji, size / 2, size / 2 + 4);
-              map.addImage(emoji, ctx.getImageData(0, 0, size, size));
-            }
-          }
-        });
-
-        // Ensure layout property is set without crashing when layer missing
-        if (map.getLayer("creature-symbol-layer")) {
-          const currentSymVis = map.getLayoutProperty("creature-symbol-layer", "visibility") || "visible";
-          const currentGlowVis = map.getLayoutProperty("creature-glow-layer", "visibility") || "visible";
+    spawns.forEach((spawn) => {
+      currentMarkerIds.add(spawn.id);
+      
+      let marker = creatureMarkersRef.current.get(spawn.id);
+      
+      if (!marker) {
+        // Create new marker
+        const el = document.createElement("div");
+        el.className = "creature-marker";
+        // Create an inner wrapper for CSS transitions to avoid Mapbox positioning conflicts
+        el.innerHTML = `
+          <div class="creature-marker-inner" style="color: ${spawn.creature.color}">
+            <div class="creature-glow" style="background: ${spawn.creature.color}"></div>
+            <div class="creature-emoji">${spawn.creature.emoji}</div>
+          </div>
+        `;
+        
+        // Add pointer style for clickability
+        el.style.cursor = "pointer";
+        el.addEventListener("click", () => handleCreatureTap(spawn));
+        
+        marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([spawn.position.lng, spawn.position.lat])
+          .addTo(map);
           
-          const targetVis = encounterPhase ? "none" : "visible";
-          
-          if (currentSymVis !== targetVis) {
-            map.setLayoutProperty("creature-symbol-layer", "visibility", targetVis);
-          }
-          if (currentGlowVis !== targetVis) {
-            map.setLayoutProperty("creature-glow-layer", "visibility", targetVis);
-          }
-        }
-
-        let needsAnimation = false;
-        const now = Date.now();
-
-        const features = spawns.map((spawn) => {
-          let scale = 1;
-          if (spawn.isDespawning) {
-            const timeRemaining = Math.max(0, spawn.expiresAt - now);
-            scale = timeRemaining / 500;
-            if (timeRemaining > 0) {
-              needsAnimation = true;
-            }
-          }
-
-          return {
-            type: "Feature" as const,
-            geometry: {
-              type: "Point" as const,
-              coordinates: [spawn.position.lng, spawn.position.lat],
-            },
-            properties: {
-              id: spawn.id,
-              emoji: spawn.creature.emoji,
-              color: spawn.creature.color,
-              rarity: spawn.creature.rarity,
-              scale,
-            },
-          }
-        });
-
-        source.setData({
-          type: "FeatureCollection",
-          features,
-        });
-
-        if (needsAnimation) {
-          animationFrameId = requestAnimationFrame(renderSpawns);
-        }
-      } catch (e) {
-        console.error("Map layer update error:", e);
+        creatureMarkersRef.current.set(spawn.id, marker);
       }
-    };
 
-    renderSpawns();
+      // Handle CSS despawn animation
+      const el = marker.getElement();
+      if (spawn.isDespawning) {
+        el.classList.add("despawning");
+      } else {
+        el.classList.remove("despawning");
+      }
 
-    return () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    };
-  }, [map, mapReady, spawns, encounterPhase]);
+      // Hide during encounter
+      el.style.display = encounterPhase ? "none" : "block";
+    });
+
+    // Remove markers that are no longer in the spawns list
+    creatureMarkersRef.current.forEach((marker, id) => {
+      if (!currentMarkerIds.has(id)) {
+        marker.remove();
+        creatureMarkersRef.current.delete(id);
+      }
+    });
+
+  }, [map, mapReady, spawns, encounterPhase, handleCreatureTap]);
 
   // Recenter button
   const handleRecenter = useCallback(() => {
@@ -372,7 +281,7 @@ export default function GameMap() {
       center: [position.lng, position.lat],
       zoom: targetZoom,
       pitch: mapConfig.defaultPitch,
-      bearing: 0,
+      bearing: mapConfig.defaultBearing ?? 0,
       duration: 800,
     });
   }, [map, position, mapConfig]);
@@ -383,6 +292,17 @@ export default function GameMap() {
   return (
     <div className="game-map-wrapper">
       <div ref={containerRef} className="game-map" />
+      {playerMarkerEl && createPortal(
+        <Player3DMarker 
+          url="/models/maskot-Mi-Sedap-fast-normal.glb" 
+          heading={playerHeading} 
+          scale={playerConfig.scale}
+          positionX={playerConfig.positionX}
+          positionY={playerConfig.positionY}
+          positionZ={playerConfig.positionZ}
+        />, 
+        playerMarkerEl
+      )}
       <button
         className="recenter-btn"
         onClick={handleRecenter}

@@ -34,9 +34,7 @@
   transform: scale(0.92);
 }
 
-.nav-tab.active {
-  background: rgba(227, 30, 36, 0.15);
-}
+
 
 .nav-icon {
   font-size: 1.6rem; /* Increased size */

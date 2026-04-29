@@ -122,6 +122,8 @@
   color: #ff4d4d;
   text-decoration: line-through;
   opacity: 0.6;
+  word-break: break-all;
+  white-space: pre-wrap;
 }
 
 .diff-arrow {
@@ -131,6 +133,8 @@
 .diff-new {
   color: #4ECDC4;
   font-weight: 700;
+  word-break: break-all;
+  white-space: pre-wrap;
 }
 
 /* Responsive Diff */

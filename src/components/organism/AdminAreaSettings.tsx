@@ -118,6 +118,24 @@ export default function AdminAreaSettings({
             <span className="setting-unit">°</span>
           </div>
         </div>
+
+        <div className="setting-item">
+          <label>Default Bearing (Rotasi)</label>
+          <p className="setting-desc">Arah hadap kamera awal pada peta.</p>
+          <div className="setting-control">
+            <input
+              type="range" min={0} max={360} step={1}
+              value={mapConfig.defaultBearing ?? 0}
+              onChange={e => onMapChange({ ...mapConfig, defaultBearing: Number(e.target.value) })}
+            />
+            <input
+              type="number" className="setting-input-manual"
+              value={mapConfig.defaultBearing ?? 0}
+              onChange={e => onMapChange({ ...mapConfig, defaultBearing: Number(e.target.value) })}
+            />
+            <span className="setting-unit">°</span>
+          </div>
+        </div>
       </div>
     </AdminSectionCard>
   )

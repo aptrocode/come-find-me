@@ -25,22 +25,32 @@ export function useMapbox({ containerRef, position }: UseMapboxOptions) {
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: MAPBOX_CONFIG.style,
+      style: mapConfig.styleUrl || MAPBOX_CONFIG.style,
       center: [position.lng, position.lat],
       zoom: initialZoom,
       maxZoom: MAPBOX_CONFIG.maxZoom,
       minZoom: MAPBOX_CONFIG.minZoom,
       pitch: mapConfig.defaultPitch, // Initial tilt for 3D perspective
-      bearing: 0, // Initial rotation
+      bearing: mapConfig.defaultBearing ?? 0, // Initial rotation
       pitchWithRotate: MAPBOX_CONFIG.pitchEnabled,
       dragRotate: MAPBOX_CONFIG.rotateEnabled,
       touchPitch: MAPBOX_CONFIG.pitchEnabled,
       attributionControl: false,
     })
 
-    // Set atmosphere and dusk lighting to make it look like a game
+    // Apply Standard style configurations if applicable
     map.on('style.load', () => {
-      map.setConfigProperty('basemap', 'lightPreset', 'dusk')
+      // Check if it's a standard style to avoid errors on custom styles that don't have these properties
+      try {
+        if (mapConfig.lightPreset) {
+          map.setConfigProperty('basemap', 'lightPreset', mapConfig.lightPreset)
+        }
+        if (mapConfig.showLabels !== undefined) {
+          map.setConfigProperty('basemap', 'showPointOfInterestLabels', mapConfig.showLabels)
+        }
+      } catch (e) {
+        console.warn('Standard style config failed (possibly not using a Standard style)', e)
+      }
     })
 
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-left')
