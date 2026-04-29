@@ -4,10 +4,11 @@ import './TopBar.css'
 
 export default function TopBar() {
   const { name, level, xp, xpToNext, totalCaught } = useGameStore(s => s.player)
+  const isHudHidden = useGameStore(s => s.isHudHidden)
   const xpPercent = Math.round((xp / xpToNext) * 100)
 
   return (
-    <div className="top-bar">
+    <div className={`top-bar ${isHudHidden ? 'hud-hidden' : ''}`}>
       <div className="top-bar-left">
         <div className="player-avatar">
           <img src="/images/profile.png" alt="Profile" className="player-avatar-img" />

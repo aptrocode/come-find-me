@@ -55,9 +55,12 @@ export default function GameMap() {
       return () => clearTimeout(timer);
     } else if (encounterPhase === null && position) {
       // Revert map back when encounter ends
+      const savedZoom = localStorage.getItem('fsm_last_zoom');
+      const targetZoom = savedZoom ? parseFloat(savedZoom) : mapConfig.defaultZoom;
+
       map.flyTo({
         center: [position.lng, position.lat],
-        zoom: mapConfig.defaultZoom,
+        zoom: targetZoom,
         pitch: mapConfig.defaultPitch,
         bearing: 0,
         duration: 1500,
@@ -93,8 +96,10 @@ export default function GameMap() {
         .setLngLat([position.lng, position.lat])
         .addTo(map);
 
-      // Center map on player initially
-      map.flyTo({ center: [position.lng, position.lat], duration: 1000 });
+      // Center map on player initially, respecting last zoom
+      const savedZoom = localStorage.getItem('fsm_last_zoom');
+      const targetZoom = savedZoom ? parseFloat(savedZoom) : mapConfig.defaultZoom;
+      map.flyTo({ center: [position.lng, position.lat], zoom: targetZoom, duration: 1000 });
     } else {
       playerMarkerRef.current.setLngLat([position.lng, position.lat]);
     }
@@ -360,9 +365,12 @@ export default function GameMap() {
   // Recenter button
   const handleRecenter = useCallback(() => {
     if (!map || !position) return;
+    const savedZoom = localStorage.getItem('fsm_last_zoom');
+    const targetZoom = savedZoom ? parseFloat(savedZoom) : mapConfig.defaultZoom;
+
     map.flyTo({
       center: [position.lng, position.lat],
-      zoom: mapConfig.defaultZoom,
+      zoom: targetZoom,
       pitch: mapConfig.defaultPitch,
       bearing: 0,
       duration: 800,

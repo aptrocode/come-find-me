@@ -15,17 +15,19 @@ export function useMapbox({ containerRef, position }: UseMapboxOptions) {
   const initializedRef = useRef(false)
   const { mapConfig } = useAdminStore()
 
-  // Initialize map once we have a position and container
   useEffect(() => {
     if (initializedRef.current || !containerRef.current || !position) return
 
     mapboxgl.accessToken = MAPBOX_CONFIG.accessToken
 
+    const savedZoom = localStorage.getItem('fsm_last_zoom')
+    const initialZoom = savedZoom ? parseFloat(savedZoom) : mapConfig.defaultZoom
+
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: MAPBOX_CONFIG.style,
       center: [position.lng, position.lat],
-      zoom: mapConfig.defaultZoom,
+      zoom: initialZoom,
       maxZoom: MAPBOX_CONFIG.maxZoom,
       minZoom: MAPBOX_CONFIG.minZoom,
       pitch: mapConfig.defaultPitch, // Initial tilt for 3D perspective
@@ -45,6 +47,11 @@ export function useMapbox({ containerRef, position }: UseMapboxOptions) {
 
     map.on('load', () => {
       setMapReady(true)
+    })
+
+    const { setLastZoom } = useAdminStore.getState()
+    map.on('zoomend', () => {
+      setLastZoom(map.getZoom())
     })
 
     mapRef.current = map

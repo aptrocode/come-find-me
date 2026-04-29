@@ -19,6 +19,7 @@ export interface Creature {
   description: string
   color: string        // Theme color for UI
   modelUrl?: string    // Path to GLB model (e.g. '/models/bikini-girl.glb')
+  modelX?: number      // Manual X offset
   modelY?: number      // Manual Y offset
   modelZ?: number      // Manual Z offset
   modelScale?: number  // Manual scale override
@@ -54,4 +55,66 @@ export interface PlayerState {
 
 export type GameScreen = 'map' | 'inventory' | 'profile'
 export type EncounterResult = 'caught' | 'fled' | 'missed' | null
+
+// ─── Admin Configuration Types ─────────────────────────────────────
+
+export interface SpawnConfig {
+  spawnRadiusMin: number
+  spawnRadiusMax: number
+  maxActiveSpawns: number
+  spawnInterval: number
+  spawnLifetime: number
+  encounterRange: number
+  despawnRange: number
+}
+
+export interface RarityWeights {
+  common: number
+  uncommon: number
+  rare: number
+  legendary: number
+}
+
+export interface CatchConfig {
+  catchFleeThreshold: number
+  cpVariance: number
+  xpPerCatch: number
+  xpPerFlee: number
+}
+
+export interface EncounterPhysicsConfig {
+  throwThreshold: number
+  dragMultiplier: number
+  throwMultiplier: number
+  mass: number
+  tension: number
+  friction: number
+  whiffThreshold: number
+  groundY: number
+  showGround: boolean
+  groundColor: string
+  groundOpacity: number
+  groundMetalness: number
+  groundRoughness: number
+}
+
+export interface DebugSettings {
+  creatures: boolean
+  spawn: boolean
+  rarity: boolean
+  catch: boolean
+  physics: boolean
+}
+
+export interface EventAreaConfig {
+  enabled: boolean
+  polygon: Position[]
+  color: string
+  opacity: number
+}
+
+export interface MapConfig {
+  defaultZoom: number
+  defaultPitch: number
+}
 

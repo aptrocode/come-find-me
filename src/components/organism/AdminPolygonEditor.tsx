@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { Icon } from '@iconify/react'
-import { MAPBOX_CONFIG } from '../../../config/mapbox'
-import type { Position } from '../../../types'
+import { MAPBOX_CONFIG } from '../../config/mapbox'
+import type { Position } from '../../types'
 import './AdminPolygonEditor.css'
 
 interface AdminPolygonEditorProps {

@@ -1,4 +1,5 @@
 import { useState, useCallback, Suspense, useRef, useMemo } from 'react'
+import { Icon } from '@iconify/react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Center, ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
@@ -6,6 +7,7 @@ import type { CaughtCreature } from '../../../types'
 import { useAdminStore } from '../../../store/useAdminStore'
 import CreatureModel from '../../atoms/CreatureModel'
 import ErrorBoundary from '../../atoms/ErrorBoundary'
+import BackButton from '../../atoms/BackButton'
 import './CreatureDetail.css'
 
 // ─── Type config ──────────────────────────────────────────────────
@@ -27,7 +29,7 @@ function AutoRotate({ children }: { children: React.ReactNode }) {
   const ref = useRef<THREE.Group>(null)
   useFrame((_, dt) => {
     if (ref.current) {
-      ref.current.rotation.y += dt * 0.3
+      ref.current.rotation.y -= dt * 0.3
     }
   })
   return <group ref={ref}>{children}</group>
@@ -123,16 +125,16 @@ export default function CreatureDetail({ entry, onClose }: CreatureDetailProps) 
       <div className="detail-scroll-content">
         {/* Top bar */}
         <div className="detail-top-bar">
-          <button className="detail-back-btn" onClick={handleClose}>
-            ← Back
-          </button>
-          <button className="detail-fav-btn">☆</button>
-        </div>
+          <BackButton onClick={handleClose} />
+          
+          <div className="detail-cp-badge">
+            <span className="cp-label">CP</span>
+            <span className="cp-value">{cp}</span>
+          </div>
 
-        {/* CP Badge */}
-        <div className="detail-cp-badge">
-          <span className="cp-label">CP</span>
-          <span className="cp-value">{cp}</span>
+          <button className="detail-fav-btn" aria-label="Favorite">
+            <Icon icon="ph:sparkle-duotone" />
+          </button>
         </div>
 
         {/* 3D Model Viewer */}
@@ -156,7 +158,7 @@ export default function CreatureDetail({ entry, onClose }: CreatureDetailProps) 
                   <CreatureModel 
                     url={modelUrl} 
                     scale={creature.modelScale ?? 2.2} 
-                    position={[0, creature.modelY ?? -0.3, 0]} 
+                    position={[creature.modelX ?? 0, creature.modelY ?? -0.3, 0]} 
                   />
                 </AutoRotate>
 
@@ -208,14 +210,23 @@ export default function CreatureDetail({ entry, onClose }: CreatureDetailProps) 
           {/* Stats */}
           <div className="detail-stats-grid">
             <div className="detail-stat-item">
+              <div className="detail-stat-icon-box" style={{ background: `${creature.color}15` }}>
+                <Icon icon="ph:sword-duotone" style={{ color: creature.color }} />
+              </div>
               <span className="detail-stat-value" style={{ color: creature.color }}>{stats.attack}</span>
               <span className="detail-stat-label">Attack</span>
             </div>
             <div className="detail-stat-item">
+              <div className="detail-stat-icon-box" style={{ background: '#4ECDC415' }}>
+                <Icon icon="ph:shield-duotone" style={{ color: '#4ECDC4' }} />
+              </div>
               <span className="detail-stat-value" style={{ color: '#4ECDC4' }}>{stats.defense}</span>
               <span className="detail-stat-label">Defense</span>
             </div>
             <div className="detail-stat-item">
+              <div className="detail-stat-icon-box" style={{ background: '#FFE66D15' }}>
+                <Icon icon="ph:lightning-duotone" style={{ color: '#FFE66D' }} />
+              </div>
               <span className="detail-stat-value" style={{ color: '#FFE66D' }}>{stats.stamina}</span>
               <span className="detail-stat-label">Stamina</span>
             </div>

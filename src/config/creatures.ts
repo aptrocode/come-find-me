@@ -12,7 +12,7 @@ export const CREATURES: Creature[] = [
     baseCP: 120,
     description: 'A playful pup made of living flame.',
     color: '#FF6B35',
-    modelUrl: '',
+    modelUrl: '/models/bikini-girl.glb',
     modelY: 0,
     modelZ: -3,
     modelScale: 2.5,
@@ -27,6 +27,10 @@ export const CREATURES: Creature[] = [
     baseCP: 110,
     description: 'A swift fish that leaps between puddles.',
     color: '#4ECDC4',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
   {
     id: 'leafling',
@@ -38,6 +42,10 @@ export const CREATURES: Creature[] = [
     baseCP: 100,
     description: 'A tiny creature woven from fresh leaves.',
     color: '#7BC950',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
   {
     id: 'sparkbug',
@@ -49,6 +57,10 @@ export const CREATURES: Creature[] = [
     baseCP: 90,
     description: 'A glowing insect that crackles with static.',
     color: '#FFE66D',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
   {
     id: 'dustpuff',
@@ -60,6 +72,10 @@ export const CREATURES: Creature[] = [
     baseCP: 80,
     description: 'A fluffy ball of dust that drifts in the wind.',
     color: '#C9B1FF',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
 
   // Uncommon
@@ -73,6 +89,10 @@ export const CREATURES: Creature[] = [
     baseCP: 220,
     description: 'A fox-like creature that channels lightning.',
     color: '#F7DC6F',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
   {
     id: 'shadowmew',
@@ -84,6 +104,10 @@ export const CREATURES: Creature[] = [
     baseCP: 250,
     description: 'A cat that phases between shadows.',
     color: '#8E44AD',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
   {
     id: 'coralsnap',
@@ -95,6 +119,10 @@ export const CREATURES: Creature[] = [
     baseCP: 200,
     description: 'A snapping creature built from coral.',
     color: '#F1948A',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
   {
     id: 'emberfox',
@@ -106,6 +134,10 @@ export const CREATURES: Creature[] = [
     baseCP: 260,
     description: 'A cunning fox wreathed in embers.',
     color: '#E74C3C',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
 
   // Rare
@@ -119,6 +151,10 @@ export const CREATURES: Creature[] = [
     baseCP: 450,
     description: 'A fierce wolf whose howl ignites the air.',
     color: '#FF4500',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
   {
     id: 'tideclaw',
@@ -130,6 +166,10 @@ export const CREATURES: Creature[] = [
     baseCP: 420,
     description: 'A massive crab that commands the tides.',
     color: '#1ABC9C',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
   {
     id: 'thornvine',
@@ -141,6 +181,10 @@ export const CREATURES: Creature[] = [
     baseCP: 400,
     description: 'A rose dragon wrapped in thorny vines.',
     color: '#27AE60',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
 
   // Legendary
@@ -154,6 +198,10 @@ export const CREATURES: Creature[] = [
     baseCP: 900,
     description: 'An ancient dragon that rides the storms.',
     color: '#3498DB',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
   {
     id: 'voidreaper',
@@ -165,5 +213,9 @@ export const CREATURES: Creature[] = [
     baseCP: 950,
     description: 'A spectral entity from the void between worlds.',
     color: '#6C3483',
+    modelUrl: '/models/bikini-girl.glb',
+    modelY: 0,
+    modelZ: -3,
+    modelScale: 2.5,
   },
 ]

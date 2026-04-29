@@ -1,5 +1,9 @@
 import { create } from 'zustand'
-import type { Creature, Position } from '../types'
+import type { 
+  Creature, SpawnConfig, RarityWeights, 
+  CatchConfig, EncounterPhysicsConfig, DebugSettings, 
+  EventAreaConfig, MapConfig 
+} from '../types'
 import { CREATURES } from '../config/creatures'
 import {
   SPAWN_RADIUS_MIN, SPAWN_RADIUS_MAX, MAX_ACTIVE_SPAWNS,
@@ -10,66 +14,7 @@ import {
   BALL_MASS, BALL_TENSION, BALL_FRICTION, BALL_WHIFF_THRESHOLD, BALL_GROUND_Y
 } from '../config/constants'
 
-// ─── Types ─────────────────────────────────────────────────────────
-export interface SpawnConfig {
-  spawnRadiusMin: number
-  spawnRadiusMax: number
-  maxActiveSpawns: number
-  spawnInterval: number
-  spawnLifetime: number
-  encounterRange: number
-  despawnRange: number
-}
-
-export interface RarityWeights {
-  common: number
-  uncommon: number
-  rare: number
-  legendary: number
-}
-
-export interface CatchConfig {
-  catchFleeThreshold: number
-  cpVariance: number
-  xpPerCatch: number
-  xpPerFlee: number
-}
-
-export interface EncounterPhysicsConfig {
-  throwThreshold: number
-  dragMultiplier: number
-  throwMultiplier: number
-  mass: number
-  tension: number
-  friction: number
-  whiffThreshold: number
-  groundY: number
-  showGround: boolean
-  groundColor: string
-  groundOpacity: number
-  groundMetalness: number
-  groundRoughness: number
-}
-
-export interface DebugSettings {
-  creatures: boolean
-  spawn: boolean
-  rarity: boolean
-  catch: boolean
-  physics: boolean
-}
-
-export interface EventAreaConfig {
-  enabled: boolean
-  polygon: Position[] // Array of vertex coordinates defining the playable area
-  color: string       // Hex color for the area visualization
-  opacity: number     // Opacity for the area fill (0-1)
-}
-
-export interface MapConfig {
-  defaultZoom: number
-  defaultPitch: number
-}
+// Types moved to src/types/index.ts
 
 interface AdminStore {
   // Data
@@ -95,6 +40,7 @@ interface AdminStore {
   setDebugSettings: (settings: Partial<DebugSettings>) => void
   setEventArea: (config: Partial<EventAreaConfig>) => void
   setMapConfig: (config: Partial<MapConfig>) => void
+  setLastZoom: (zoom: number) => void
 
   // Reset
   resetToDefaults: () => void
@@ -213,6 +159,8 @@ const defaultMapConfig: MapConfig = {
   defaultPitch: 60,
 }
 
+const STORAGE_KEY_ZOOM = 'fsm_last_zoom'
+
 // ─── Store ──────────────────────────────────────────────────────────
 export const useAdminStore = create<AdminStore>((set) => ({
   creatures: [...CREATURES],
@@ -223,6 +171,12 @@ export const useAdminStore = create<AdminStore>((set) => ({
   debugSettings: { ...defaultDebugSettings },
   eventArea: { ...defaultEventArea },
   mapConfig: { ...defaultMapConfig },
+  
+  setLastZoom: (zoom) => {
+    localStorage.setItem(STORAGE_KEY_ZOOM, zoom.toString())
+    // We don't necessarily need to put it in react state if we only use it for init, 
+    // but putting it in state allows other components to react to it.
+  },
 
   addCreature: (creature) => {
     set((s) => {

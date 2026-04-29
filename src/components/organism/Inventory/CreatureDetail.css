@@ -1,8 +1,7 @@
-/* ─── Full-screen creature detail overlay ─── */
 .creature-detail-overlay {
   position: fixed;
   inset: 0;
-  z-index: 999; /* Above everything including nav bars */
+  z-index: 2000; /* Increased to be above global HUD (TopBar/BottomNav) */
   display: flex;
   flex-direction: column;
   animation: detailFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -90,8 +89,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: clamp(10px, 2vh, 16px) clamp(12px, 4vw, 20px);
-  padding-top: max(clamp(10px, 2vh, 16px), env(safe-area-inset-top, 10px));
+  padding: 20px 20px; /* Increased top padding */
+  padding-top: max(24px, env(safe-area-inset-top, 24px));
   flex-shrink: 0;
 }
 
@@ -141,15 +140,13 @@
 
 /* ─── CP badge (floating over 3D scene) ─── */
 .detail-cp-badge {
-  position: relative;
-  z-index: 10;
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 6px;
-  padding: clamp(2px, 0.5vh, 6px) 0;
-  flex-shrink: 0;
+  gap: 4px;
+  flex: 1;
   animation: cpPulseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  min-width: 0;
 }
 
 @keyframes cpPulseIn {
@@ -166,10 +163,10 @@
 }
 
 .cp-value {
-  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  font-size: 1.8rem;
   font-weight: 900;
   color: #fff;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
   letter-spacing: -0.02em;
 }
 
@@ -321,25 +318,39 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: clamp(8px, 1.5vh, 12px) clamp(6px, 1.5vw, 8px);
-  border-radius: clamp(10px, 2.5vw, 14px);
+  gap: 6px;
+  padding: clamp(10px, 1.8vh, 14px) clamp(6px, 1.5vw, 8px);
+  border-radius: clamp(12px, 3vw, 16px);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.detail-stat-icon-box {
+  width: clamp(28px, 6vw, 36px);
+  height: clamp(28px, 6vw, 36px);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  margin-bottom: 2px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .detail-stat-value {
-  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  font-size: clamp(1rem, 3.5vw, 1.25rem);
   font-weight: 800;
   color: #fff;
+  line-height: 1;
 }
 
 .detail-stat-label {
   font-size: clamp(0.5rem, 1.3vw, 0.6rem);
-  font-weight: 600;
+  font-weight: 700;
   color: rgba(255, 255, 255, 0.35);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
 /* Description */
@@ -392,6 +403,6 @@
 @media (min-height: 800px) {
   .detail-info-card {
     padding: 20px 24px;
-    padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+    padding-bottom: max(80px, env(safe-area-inset-bottom, 20px));
   }
 }

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, Suspense, Component, useMemo, useRef } from 'react'
+import { Icon } from '@iconify/react'
 import type { ReactNode, ErrorInfo } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useDrag } from '@use-gesture/react'
@@ -461,7 +462,7 @@ export default function EncounterScreen() {
                   <CreatureModel 
                     url={modelUrl} 
                     scale={creature.modelScale ?? 2.5} 
-                    position={[0, creature.modelY ?? 0, creature.modelZ ?? -3]} 
+                    position={[creature.modelX ?? 0, creature.modelY ?? 0, creature.modelZ ?? -3]} 
                     onBoundsComputed={handleBoundsComputed} 
                   />
                 )}
@@ -547,19 +548,19 @@ export default function EncounterScreen() {
               <div className={`encounter-result result-${encounterResult}`}>
                 {encounterResult === 'caught' && (
                   <>
-                    <span className="result-icon">🎉</span>
+                    <Icon icon="ph:confetti-duotone" className="result-icon" />
                     <span className="result-text">Gotcha! {creature.name} was caught!</span>
                   </>
                 )}
                 {encounterResult === 'fled' && (
                   <>
-                    <span className="result-icon">💨</span>
+                    <Icon icon="ph:wind-duotone" className="result-icon" />
                     <span className="result-text">{creature.name} fled!</span>
                   </>
                 )}
                 {encounterResult === 'missed' && (
                   <>
-                    <span className="result-icon">❌</span>
+                    <Icon icon="ph:x-circle-duotone" className="result-icon" />
                     <span className="result-text">Missed! Try again!</span>
                   </>
                 )}

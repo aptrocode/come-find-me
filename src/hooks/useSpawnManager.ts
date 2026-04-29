@@ -29,7 +29,7 @@ export function useSpawnManager(playerPosition: Position | null) {
     // Roll rarity and pick a creature from admin-configured list
     const rarity = rollRarityFromWeights(rarityWeights)
     const candidates = creatures.filter(c => c.rarity === rarity)
-    if (candidates.length === 0) return
+    if (candidates.length === 0) return false
 
     const creature = candidates[Math.floor(Math.random() * candidates.length)]
     
@@ -61,6 +61,7 @@ export function useSpawnManager(playerPosition: Position | null) {
     }
 
     addSpawn(spawn)
+    return true
   }, [playerPosition, spawns.length, addSpawn, creatures, spawnConfig, rarityWeights])
 
   // Distance checks for despawning
@@ -84,12 +85,12 @@ export function useSpawnManager(playerPosition: Position | null) {
     if (!playerPosition) return
 
     // Ensure we have at least 3 creatures on first load/GPS acquisition
-    if (!burstHappened.current && spawns.length < 3) {
-      const needed = 3 - spawns.length
-      for (let i = 0; i < needed; i++) {
-        // We use a small delay between spawns to avoid potential coordinate collisions 
-        // if the random logic hits similar spots, though unlikely.
-        setTimeout(() => trySpawn(), i * 100)
+    if (!burstHappened.current && creatures.length > 0) {
+      const needed = Math.max(0, 3 - spawns.length)
+      if (needed > 0) {
+        for (let i = 0; i < needed; i++) {
+          setTimeout(() => trySpawn(), i * 150)
+        }
       }
       burstHappened.current = true
     }
@@ -100,7 +101,7 @@ export function useSpawnManager(playerPosition: Position | null) {
     }, spawnConfig.spawnInterval)
 
     return () => clearInterval(interval)
-  }, [playerPosition, trySpawn, cleanExpiredSpawns, spawnConfig.spawnInterval]) // Removed spawns.length from deps to prevent re-runs on every spawn
+  }, [playerPosition, trySpawn, cleanExpiredSpawns, spawnConfig.spawnInterval, creatures.length]) 
 
   return { spawns, removeSpawn }
 }

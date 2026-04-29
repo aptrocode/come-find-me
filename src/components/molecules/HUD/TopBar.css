@@ -13,6 +13,16 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 100;
   gap: 10px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.top-bar.hud-hidden {
+  transform: translateY(-100%);
+  transition-delay: 0s;
+}
+
+.top-bar:not(.hud-hidden) {
+  transition-delay: 0.3s; /* Delay entry on close */
 }
 
 .top-bar-left {

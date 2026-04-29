@@ -11,6 +11,8 @@ interface GameStore {
   // Navigation
   activeScreen: GameScreen
   setActiveScreen: (screen: GameScreen) => void
+  isHudHidden: boolean
+  setHudHidden: (hidden: boolean) => void
 
   // Spawns
   spawns: SpawnPoint[]
@@ -64,12 +66,23 @@ const defaultPlayer: PlayerState = {
 export const useGameStore = create<GameStore>((set, get) => ({
   player: { ...defaultPlayer },
   activeScreen: 'map',
+  isHudHidden: false,
   spawns: [],
   activeEncounter: null,
   encounterPhase: null,
   encounterResult: null,
 
-  setActiveScreen: (screen) => set({ activeScreen: screen }),
+  setActiveScreen: (screen) => {
+    const { activeEncounter } = get()
+    if (activeEncounter) {
+      get().closeEncounter()
+    }
+    set({ 
+      activeScreen: screen,
+      isHudHidden: false // Always show HUD when switching main screens
+    })
+  },
+  setHudHidden: (hidden) => set({ isHudHidden: hidden }),
 
   addSpawn: (spawn) => set((s) => ({ spawns: [...s.spawns, spawn] })),
 

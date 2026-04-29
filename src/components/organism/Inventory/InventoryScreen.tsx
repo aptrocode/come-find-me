@@ -9,11 +9,22 @@ import './InventoryScreen.css'
 export default function InventoryScreen() {
   const { inventory, totalCaught } = useGameStore(s => s.player)
   const { creatures } = useAdminStore()
+  const { isHudHidden, setHudHidden } = useGameStore()
   const uniqueCount = new Set(inventory.map(c => c.creature.id)).size
   const [selectedCreature, setSelectedCreature] = useState<CaughtCreature | null>(null)
 
+  const handleSelect = (creature: CaughtCreature) => {
+    setSelectedCreature(creature)
+    setHudHidden(true)
+  }
+
+  const handleClose = () => {
+    setSelectedCreature(null)
+    setHudHidden(false)
+  }
+
   return (
-    <div className="inventory-screen">
+    <div className={`inventory-screen ${isHudHidden ? 'hud-hidden' : ''}`}>
       <div className="inventory-header">
         <h1 className="inventory-title">Collection</h1>
         <div className="inventory-stats">
@@ -38,7 +49,7 @@ export default function InventoryScreen() {
               <div
                 key={entry.id}
                 className={`inv-card rarity-card-${current.rarity}`}
-                onClick={() => setSelectedCreature(entry)}
+                onClick={() => handleSelect(entry)}
               >
                 <div className="inv-card-emoji" style={{ filter: `drop-shadow(0 2px 8px ${current.color}40)` }}>
                   {current.emoji}
@@ -58,7 +69,7 @@ export default function InventoryScreen() {
       {selectedCreature && (
         <CreatureDetail
           entry={selectedCreature}
-          onClose={() => setSelectedCreature(null)}
+          onClose={handleClose}
         />
       )}
     </div>

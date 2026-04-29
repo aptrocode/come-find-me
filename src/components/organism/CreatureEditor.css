@@ -1,0 +1,176 @@
+/* ─── Creature Form Editor ─── */
+.creature-form {
+  padding: 32px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 24px;
+  overflow-y: auto;
+}
+
+.form-group.full-width,
+.form-actions {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 32px;
+  border-top: 1px solid var(--admin-border);
+}
+
+@media (max-width: 600px) {
+  .creature-form {
+    grid-template-columns: 1fr;
+    padding: 24px 20px;
+  }
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-dim);
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  color: #fff;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  outline: none;
+  resize: vertical;
+}
+
+.form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 42px !important;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-chevron {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--admin-text-dim);
+  font-size: 1.1rem;
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
+}
+
+.select-wrapper:focus-within .select-chevron {
+  transform: translateY(-50%) rotate(180deg);
+  color: var(--admin-accent);
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color: var(--admin-accent);
+  background: rgba(78, 205, 196, 0.08);
+}
+
+.form-group select option {
+  background: #161b36;
+  color: #fff;
+  padding: 10px;
+}
+
+/* Model Upload Specifics within Form */
+.model-upload-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.model-url-input {
+  flex: 1;
+}
+
+.model-alignment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--admin-border);
+}
+
+/* ─── Model Upload & Status ─── */
+.upload-btn {
+  white-space: nowrap;
+  min-width: 130px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background: rgba(253, 185, 19, 0.15);
+  border-color: var(--admin-secondary);
+  color: var(--admin-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(253, 185, 19, 0.1);
+}
+
+.upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.upload-btn.uploading {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--admin-border);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.model-status {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--admin-text-dim);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}

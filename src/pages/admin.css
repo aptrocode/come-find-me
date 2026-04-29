@@ -1,0 +1,167 @@
+/* ===========================
+   Admin Dashboard Shell Styles (Core)
+   =========================== */
+:root {
+  --admin-bg: #001d47; /* Mie Sedaap Deep Blue */
+  --admin-accent: #e31e24; /* Mie Sedaap Red */
+  --admin-accent-glow: rgba(227, 30, 36, 0.4);
+  --admin-secondary: #fdb913; /* Mie Sedaap Yellow/Gold */
+  --admin-card-bg: rgba(255, 255, 255, 0.04);
+  --admin-border: rgba(255, 255, 255, 0.1);
+  --admin-text-main: #ffffff;
+  --admin-text-dim: rgba(255, 255, 255, 0.7);
+  --glass-blur: blur(16px);
+  --admin-warning: #ff4d4d;
+}
+
+/* ─── Custom Scrollbar (Minimalist) ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+/* Scrollbar interaction zones */
+.creature-form:hover::-webkit-scrollbar-thumb,
+.admin-main:hover::-webkit-scrollbar-thumb,
+.sidebar-nav:hover::-webkit-scrollbar-thumb,
+.admin-section-card-content:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-secondary);
+  cursor: pointer;
+}
+
+/* ─── Main Shell Layout ─── */
+.admin-layout {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% -20%, #1a224a 0%, #0b0f24 100%);
+  z-index: 200;
+  display: flex;
+  color: var(--admin-text-main);
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+}
+
+.admin-main {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.admin-content-wrapper {
+  padding: 32px 40px;
+  padding-bottom: env(safe-area-inset-bottom, 40px);
+}
+
+/* ─── UI Atoms (Buttons & Inputs) ─── */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #e31e24, #2e3192);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(227, 30, 36, 0.3);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-dim);
+  font-weight: 700;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-mini {
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border-radius: 10px;
+}
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 14px;
+  background: rgba(253, 185, 19, 0.1);
+  color: var(--admin-secondary);
+  border: 1px solid rgba(253, 185, 19, 0.2);
+  font-weight: 800;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-add:hover {
+  background: rgba(253, 185, 19, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(253, 185, 19, 0.2);
+}
+
+.num-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.num-input:focus {
+  border-color: var(--admin-accent);
+  background: rgba(78, 205, 196, 0.05);
+  box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.1);
+}
+
+/* ─── Global Responsive Transitions ─── */
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+  .admin-content-wrapper {
+    padding: 20px 16px;
+  }
+}

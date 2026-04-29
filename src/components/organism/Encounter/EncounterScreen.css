@@ -67,7 +67,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px);
+  padding: env(safe-area-inset-top, 20px) 20px calc(64px + env(safe-area-inset-bottom, 20px));
   pointer-events: none; /* Let touches pass through to canvas */
 }
 
