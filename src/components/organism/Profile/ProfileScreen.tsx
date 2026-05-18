@@ -1,9 +1,32 @@
+import { useState, useEffect } from 'react'
 import { useGameStore } from '../../../store/useGameStore'
+import { useAuthStore } from '../../../store/useAuthStore'
+import { useNavigate } from 'react-router-dom'
 import { Icon } from '@iconify/react'
 
 export default function ProfileScreen() {
   const player = useGameStore(s => s.player)
+  const { user, logout } = useAuthStore()
+  const navigate = useNavigate()
   const uniqueCount = new Set(player.inventory.map(c => c.creature.id)).size
+
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('fsm_theme') as 'dark' | 'light') || 'dark'
+  })
+
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light-theme')
+    } else {
+      document.documentElement.classList.remove('light-theme')
+    }
+    localStorage.setItem('fsm_theme', theme)
+  }, [theme])
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <div className="profile-screen">
@@ -12,6 +35,9 @@ export default function ProfileScreen() {
           <img src="/images/profile.png" alt="Profile" className="profile-avatar-lg-img" />
         </div>
         <h1 className="profile-name">{player.name}</h1>
+        {user?.email && (
+          <p className="profile-email">{user.email}</p>
+        )}
         <div className="profile-level-badge">Level {player.level}</div>
       </div>
 
@@ -45,6 +71,18 @@ export default function ProfileScreen() {
           <span className="psc-label">Total XP</span>
         </div>
       </div>
+
+      {/* Theme Toggle Button */}
+      <button className="profile-theme-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+        <Icon icon={theme === 'dark' ? 'ph:sun-dim-duotone' : 'ph:moon-stars-duotone'} />
+        <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+      </button>
+
+      {/* Logout Button */}
+      <button className="profile-logout-btn" onClick={handleLogout}>
+        <Icon icon="ph:power-duotone" />
+        <span>Logout</span>
+      </button>
     </div>
   )
 }

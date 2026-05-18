@@ -14,6 +14,7 @@ import AdminPhysicsSettings from '../components/organism/AdminPhysicsSettings'
 import AdminAreaSettings from '../components/organism/AdminAreaSettings'
 import AdminMapStyleSettings from '../components/organism/AdminMapStyleSettings'
 import AdminPlayerSettings from '../components/organism/AdminPlayerSettings'
+import AdminUserManagement from '../components/organism/AdminUserManagement'
 import ConfirmModal, { type ConfirmModalProps } from '../components/molecules/ConfirmModal'
 
 import './admin.css'
@@ -130,7 +131,8 @@ export default function AdminPage() {
       physics: 'Encounter Physics',
       area: 'Map & Area',
       style: 'Map Style',
-      player: 'Player Model'
+      player: 'Player Model',
+      users: 'User Management'
     }
 
     setConfirmState({
@@ -344,6 +346,10 @@ export default function AdminPage() {
               onChange={setLocalPlayerConfig}
               onReset={() => handleResetSection('player')}
             />
+          )}
+
+          {activeTab === 'users' && (
+            <AdminUserManagement />
           )}
         </div>
       </main>

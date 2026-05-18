@@ -24,3 +24,10 @@ dist-ssr
 *.sw?
 
 .env
+
+# SQLite databases and transaction logs
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3

@@ -3,17 +3,17 @@ import { Icon } from '@iconify/react'
 import './TopBar.css'
 
 export default function TopBar() {
-  const { name, level, xp, xpToNext, totalCaught } = useGameStore(s => s.player)
-  const isHudHidden = useGameStore(s => s.isHudHidden)
+  const { player, isHudHidden, setActiveScreen } = useGameStore()
+  const { name, level, xp, xpToNext, totalCaught } = player
   const xpPercent = Math.round((xp / xpToNext) * 100)
 
   return (
     <div className={`top-bar ${isHudHidden ? 'hud-hidden' : ''}`}>
       <div className="top-bar-left">
-        <div className="player-avatar">
+        <div className="player-avatar" onClick={() => setActiveScreen('profile')}>
           <img src="/images/profile.png" alt="Profile" className="player-avatar-img" />
         </div>
-        <div className="player-info">
+        <div className="player-info" onClick={() => setActiveScreen('profile')} style={{ cursor: 'pointer' }}>
           <span className="player-name">{name}</span>
           <span className="player-level">Lv. {level}</span>
         </div>

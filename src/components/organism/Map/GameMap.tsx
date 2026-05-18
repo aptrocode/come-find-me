@@ -300,6 +300,9 @@ export default function GameMap() {
           positionX={playerConfig.positionX}
           positionY={playerConfig.positionY}
           positionZ={playerConfig.positionZ}
+          rotationX={playerConfig.rotationX}
+          rotationY={playerConfig.rotationY}
+          rotationZ={playerConfig.rotationZ}
         />, 
         playerMarkerEl
       )}

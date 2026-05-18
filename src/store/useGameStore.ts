@@ -163,10 +163,38 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   closeEncounter: () => set({ activeEncounter: null, encounterPhase: null, encounterResult: null }),
 
-  loadSave: () => {
+  loadSave: async () => {
+    // 1. Load local save first for instant UI response
     const saved = loadGame()
     if (saved) {
       set({ player: { ...defaultPlayer, ...saved, xpToNext: calcXpToNext(saved.level) } })
+    }
+
+    // 2. Fetch server save in background if token exists
+    const token = localStorage.getItem('fsm_token')
+    if (token) {
+      try {
+        const res = await fetch('/api/auth/save', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.saveData) {
+            const serverSave = data.saveData
+            // If server has more or equal catches, sync and restore it
+            const localCaught = saved?.totalCaught || 0
+            const serverCaught = serverSave.totalCaught || 0
+            if (serverCaught >= localCaught) {
+              set({ player: { ...defaultPlayer, ...serverSave, xpToNext: calcXpToNext(serverSave.level) } })
+              localStorage.setItem('firstseeme_save', JSON.stringify(serverSave))
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load save from server:', err)
+      }
     }
   },
 }))

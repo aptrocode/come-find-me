@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import type { ViteDevServer, Plugin } from 'vite'
 import type { IncomingMessage, ServerResponse } from 'http'
+import { authApiPlugin } from './server/authPlugin'
 
 function adminApiPlugin(): Plugin {
   return {
@@ -79,7 +80,7 @@ function adminApiPlugin(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), adminApiPlugin()],
+  plugins: [react(), adminApiPlugin(), authApiPlugin()],
   server: {
     host: true,
     port: 5678,

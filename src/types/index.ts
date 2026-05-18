@@ -127,5 +127,16 @@ export interface PlayerConfig {
   positionX: number
   positionY: number
   positionZ: number
+  rotationX: number
+  rotationY: number
+  rotationZ: number
+}
+
+export interface AuthUser {
+  id: string
+  name: string
+  email: string
+  createdAt: number
+  saveData?: PlayerState | null
 }
 

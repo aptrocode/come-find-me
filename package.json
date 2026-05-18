@@ -15,6 +15,8 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@use-gesture/react": "^10.3.1",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.9.0",
     "mapbox-gl": "^3.21.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -25,6 +27,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/mapbox-gl": "^3.5.0",
     "@types/node": "^25.5.2",
     "@types/react": "^19.2.14",

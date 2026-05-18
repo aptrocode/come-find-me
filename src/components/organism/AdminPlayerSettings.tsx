@@ -87,6 +87,61 @@ export default function AdminPlayerSettings({ config, onChange, onReset }: Admin
             />
           </div>
         </div>
+
+        {/* Rotation Row */}
+        <div className="setting-item">
+          <label>Rotasi X (Pitch)</label>
+          <p className="setting-desc">Putar model ke depan atau belakang.</p>
+          <div className="setting-control">
+            <input
+              type="range" min={-180} max={180} step={1}
+              value={config.rotationX || 0}
+              onChange={e => onChange({ ...config, rotationX: Number(e.target.value) || 0 })}
+            />
+            <input
+              type="number" className="setting-input-manual"
+              value={config.rotationX || 0}
+              onChange={e => onChange({ ...config, rotationX: Number(e.target.value) || 0 })}
+            />
+            <span className="setting-unit">°</span>
+          </div>
+        </div>
+
+        <div className="setting-item">
+          <label>Rotasi Y (Yaw/Heading)</label>
+          <p className="setting-desc">Putar model ke kiri atau kanan.</p>
+          <div className="setting-control">
+            <input
+              type="range" min={-180} max={180} step={1}
+              value={config.rotationY || 0}
+              onChange={e => onChange({ ...config, rotationY: Number(e.target.value) || 0 })}
+            />
+            <input
+              type="number" className="setting-input-manual"
+              value={config.rotationY || 0}
+              onChange={e => onChange({ ...config, rotationY: Number(e.target.value) || 0 })}
+            />
+            <span className="setting-unit">°</span>
+          </div>
+        </div>
+
+        <div className="setting-item">
+          <label>Rotasi Z (Roll)</label>
+          <p className="setting-desc">Miringkan model ke kiri atau kanan.</p>
+          <div className="setting-control">
+            <input
+              type="range" min={-180} max={180} step={1}
+              value={config.rotationZ || 0}
+              onChange={e => onChange({ ...config, rotationZ: Number(e.target.value) || 0 })}
+            />
+            <input
+              type="number" className="setting-input-manual"
+              value={config.rotationZ || 0}
+              onChange={e => onChange({ ...config, rotationZ: Number(e.target.value) || 0 })}
+            />
+            <span className="setting-unit">°</span>
+          </div>
+        </div>
       </div>
     </AdminSectionCard>
   )

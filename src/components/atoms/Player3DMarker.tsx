@@ -13,9 +13,16 @@ interface AnimatedModelProps {
   positionX?: number
   positionY?: number
   positionZ?: number
+  rotationX?: number
+  rotationY?: number
+  rotationZ?: number
 }
 
-function AnimatedModel({ url, heading, scale = 2, positionX = 0, positionY = -1, positionZ = 0 }: AnimatedModelProps) {
+function AnimatedModel({ 
+  url, heading, scale = 2, 
+  positionX = 0, positionY = -1, positionZ = 0,
+  rotationX = 0, rotationY = 0, rotationZ = 0 
+}: AnimatedModelProps) {
   const group = useRef<THREE.Group>(null)
   const gl = useThree((state) => state.gl)
   
@@ -60,7 +67,16 @@ function AnimatedModel({ url, heading, scale = 2, positionX = 0, positionY = -1,
 
   return (
     <group ref={group}>
-      <primitive object={scene} scale={scale} position={[positionX, positionY, positionZ]} />
+      <primitive 
+        object={scene} 
+        scale={scale} 
+        position={[positionX, positionY, positionZ]} 
+        rotation={[
+          THREE.MathUtils.degToRad(rotationX),
+          THREE.MathUtils.degToRad(rotationY),
+          THREE.MathUtils.degToRad(rotationZ)
+        ]}
+      />
     </group>
   )
 }
@@ -80,14 +96,20 @@ export default function Player3DMarker({
   scale = 2,
   positionX = 0,
   positionY = -1,
-  positionZ = 0
+  positionZ = 0,
+  rotationX = 0,
+  rotationY = 0,
+  rotationZ = 0
 }: { 
   url: string, 
   heading: number, 
   scale?: number,
   positionX?: number,
   positionY?: number,
-  positionZ?: number
+  positionZ?: number,
+  rotationX?: number,
+  rotationY?: number,
+  rotationZ?: number
 }) {
   return (
     <div style={{ width: 250, height: 250, transform: 'translate(-50%, -70%)', pointerEvents: 'none' }}>
@@ -102,6 +124,9 @@ export default function Player3DMarker({
             positionX={positionX}
             positionY={positionY}
             positionZ={positionZ}
+            rotationX={rotationX}
+            rotationY={rotationY}
+            rotationZ={rotationZ}
           />
         </Suspense>
       </Canvas>

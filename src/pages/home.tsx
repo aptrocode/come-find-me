@@ -8,6 +8,7 @@ import DebugOverlay from '../components/molecules/Debug/DebugOverlay'
 import ProfileScreen from '../components/organism/Profile/ProfileScreen'
 import { useGameStore } from '../store/useGameStore'
 import { useAdminStore } from '../store/useAdminStore'
+import { useAuthStore } from '../store/useAuthStore.ts'
 import './home.css'
 
 const InventoryScreen = lazy(() => import('../components/organism/Inventory/InventoryScreen'))
@@ -15,6 +16,7 @@ const InventoryScreen = lazy(() => import('../components/organism/Inventory/Inve
 export default function HomePage() {
   const { activeScreen, activeEncounter, loadSave } = useGameStore()
   const loadAdminConfig = useAdminStore(s => s.loadAdminConfig)
+  const authUser = useAuthStore(s => s.user)
 
   useEffect(() => {
     loadSave()
@@ -23,6 +25,13 @@ export default function HomePage() {
     const interval = setInterval(loadAdminConfig, 10000)
     return () => clearInterval(interval)
   }, [loadSave, loadAdminConfig])
+
+  // Sync auth user name into game state
+  useEffect(() => {
+    if (authUser?.name) {
+      useGameStore.setState(s => ({ player: { ...s.player, name: authUser.name } }))
+    }
+  }, [authUser])
 
   return (
     <div className="home-page">
