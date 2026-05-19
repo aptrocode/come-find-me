@@ -42,7 +42,7 @@ export default function GameMap() {
     [position, encounterPhase, startEncounter],
   );
 
-  // Handle Encounter Transition
+  // Handle Encounter Transition — zoom into creature
   useEffect(() => {
     if (!map || !mapReady || !activeEncounter) return;
 
@@ -60,8 +60,23 @@ export default function GameMap() {
       }, 2000);
 
       return () => clearTimeout(timer);
-    } else if (encounterPhase === null && position) {
-      // Revert map back when encounter ends
+    }
+  }, [
+    map,
+    mapReady,
+    activeEncounter,
+    encounterPhase,
+    setEncounterPhase,
+  ]);
+
+  // Auto-recenter on player after encounter ends
+  // This is a separate effect because closeEncounter() sets activeEncounter
+  // to null, which would cause the above effect to bail out before reaching
+  // the recenter logic.
+  const prevEncounterPhaseRef = useRef<string | null>(null);
+  useEffect(() => {
+    // Detect transition from any encounter phase → null (battle ended)
+    if (prevEncounterPhaseRef.current && encounterPhase === null && position && map && mapReady) {
       const savedZoom = localStorage.getItem('fsm_last_zoom');
       const targetZoom = savedZoom ? parseFloat(savedZoom) : mapConfig.defaultZoom;
 
@@ -73,12 +88,11 @@ export default function GameMap() {
         duration: 1500,
       });
     }
+    prevEncounterPhaseRef.current = encounterPhase;
   }, [
     map,
     mapReady,
-    activeEncounter,
     encounterPhase,
-    setEncounterPhase,
     position,
     mapConfig,
   ]);
@@ -227,6 +241,11 @@ export default function GameMap() {
       let marker = creatureMarkersRef.current.get(spawn.id);
       
       if (!marker) {
+        const scaleVal = spawn.creature.iconScale ?? 1.0;
+        const emojiContent = (spawn.creature.emoji.startsWith('/') || spawn.creature.emoji.startsWith('http') || spawn.creature.emoji.includes('.'))
+          ? `<img src="${spawn.creature.emoji}" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none; transform: scale(${scaleVal});" />`
+          : `<span style="display: inline-block; transform: scale(${scaleVal});">${spawn.creature.emoji}</span>`;
+
         // Create new marker
         const el = document.createElement("div");
         el.className = "creature-marker";
@@ -234,7 +253,7 @@ export default function GameMap() {
         el.innerHTML = `
           <div class="creature-marker-inner" style="color: ${spawn.creature.color}">
             <div class="creature-glow" style="background: ${spawn.creature.color}"></div>
-            <div class="creature-emoji">${spawn.creature.emoji}</div>
+            <div class="creature-emoji" style="display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 50%; padding: 4px;">${emojiContent}</div>
           </div>
         `;
         
@@ -251,6 +270,8 @@ export default function GameMap() {
 
       // Handle CSS despawn animation
       const el = marker.getElement();
+      el.style.setProperty('--marker-scale', (mapConfig.creatureMarkerScale ?? 1.0).toString());
+      
       if (spawn.isDespawning) {
         el.classList.add("despawning");
       } else {
@@ -269,7 +290,7 @@ export default function GameMap() {
       }
     });
 
-  }, [map, mapReady, spawns, encounterPhase, handleCreatureTap]);
+  }, [map, mapReady, spawns, encounterPhase, handleCreatureTap, mapConfig.creatureMarkerScale]);
 
   // Recenter button
   const handleRecenter = useCallback(() => {
@@ -292,7 +313,7 @@ export default function GameMap() {
   return (
     <div className="game-map-wrapper">
       <div ref={containerRef} className="game-map" />
-      {playerMarkerEl && createPortal(
+      {playerMarkerEl && !encounterPhase && createPortal(
         <Player3DMarker 
           url="/models/maskot-Mi-Sedap-fast-normal.glb" 
           heading={playerHeading} 

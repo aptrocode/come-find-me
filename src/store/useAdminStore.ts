@@ -32,6 +32,7 @@ interface AdminState {
   setEventArea: (area: EventAreaConfig) => void
   setMapConfig: (config: MapConfig) => void
   setPlayerConfig: (config: PlayerConfig) => void
+  setMultipleConfigs: (configs: Partial<AdminStateData>) => void
 
   // Resets
   resetToDefaults: () => Promise<void>
@@ -105,7 +106,8 @@ const DEFAULT_CONFIG: AdminStateData = {
     defaultBearing: 0,
     styleUrl: "mapbox://styles/mapbox/standard",
     lightPreset: "dusk",
-    showLabels: true
+    showLabels: true,
+    creatureMarkerScale: 1.0
   },
   playerConfig: {
     scale: 2,
@@ -128,6 +130,30 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       if (data) {
         set({ 
           ...data,
+          spawnConfig: {
+            ...DEFAULT_CONFIG.spawnConfig,
+            ...(data.spawnConfig || {})
+          },
+          rarityWeights: {
+            ...DEFAULT_CONFIG.rarityWeights,
+            ...(data.rarityWeights || {})
+          },
+          catchConfig: {
+            ...DEFAULT_CONFIG.catchConfig,
+            ...(data.catchConfig || {})
+          },
+          encounterPhysics: {
+            ...DEFAULT_CONFIG.encounterPhysics,
+            ...(data.encounterPhysics || {})
+          },
+          eventArea: {
+            ...DEFAULT_CONFIG.eventArea,
+            ...(data.eventArea || {})
+          },
+          mapConfig: {
+            ...DEFAULT_CONFIG.mapConfig,
+            ...(data.mapConfig || {})
+          },
           playerConfig: {
             ...DEFAULT_CONFIG.playerConfig,
             ...(data.playerConfig || {})
@@ -181,6 +207,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   setEventArea: (eventArea) => { set({ eventArea }); get().saveAdminConfig() },
   setMapConfig: (mapConfig) => { set({ mapConfig }); get().saveAdminConfig() },
   setPlayerConfig: (playerConfig) => { set({ playerConfig }); get().saveAdminConfig() },
+  setMultipleConfigs: (configs) => { set(configs); get().saveAdminConfig() },
 
   resetToDefaults: async () => {
     set({ ...DEFAULT_CONFIG })

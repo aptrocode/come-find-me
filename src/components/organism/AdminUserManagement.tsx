@@ -173,7 +173,13 @@ export default function AdminUserManagement() {
                   <div className="admin-collection-list">
                     {inventory.map((item, idx) => (
                       <div key={item.id || idx} className="admin-collection-item">
-                        <span className="aci-emoji">{item.creature.emoji}</span>
+                        <span className="aci-emoji">
+                          {item.creature.emoji.startsWith('/') || item.creature.emoji.startsWith('http') || item.creature.emoji.includes('.') ? (
+                            <img src={item.creature.emoji} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px', transform: `scale(${item.creature.iconScale ?? 1.0})` }} />
+                          ) : (
+                            <span style={{ display: 'inline-block', transform: `scale(${item.creature.iconScale ?? 1.0})` }}>{item.creature.emoji}</span>
+                          )}
+                        </span>
                         <div className="aci-info">
                           <span className="aci-name">{item.creature.name}</span>
                           <span className="aci-cp">CP {item.cp}</span>

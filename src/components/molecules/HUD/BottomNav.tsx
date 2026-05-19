@@ -1,30 +1,51 @@
 import { useGameStore } from '../../../store/useGameStore'
 import { Icon } from '@iconify/react'
-import type { GameScreen } from '../../../types'
+import FullscreenButton from '../../atoms/FullscreenButton'
 import './BottomNav.css'
 
-const tabs: { id: GameScreen; icon: string; label: string }[] = [
-  { id: 'map', icon: 'ph:map-trifold-duotone', label: 'Map' },
-  { id: 'inventory', icon: 'ph:bag-simple-duotone', label: 'Collection' },
-  { id: 'profile', icon: 'ph:user-circle-duotone', label: 'Profile' },
-]
-
 export default function BottomNav() {
-  const { activeScreen, setActiveScreen } = useGameStore()
+  const { activeScreen, setActiveScreen, player, isHudHidden } = useGameStore()
+  const { name, level } = player
+
+  if (isHudHidden) return null
 
   return (
-    <nav className="bottom-nav">
-      {tabs.map(tab => (
-        <button
-          key={tab.id}
-          className={`nav-tab ${activeScreen === tab.id ? 'active' : ''}`}
-          onClick={() => setActiveScreen(tab.id)}
-          aria-label={tab.label}
+    <div className="bottom-hud-container">
+      {/* 1. Bottom-Left Circular Profile Trigger */}
+      {activeScreen === 'map' && (
+        <div 
+          className="floating-profile-trigger"
+          onClick={() => setActiveScreen('profile')}
+          role="button"
+          tabIndex={0}
         >
-          <Icon icon={tab.icon} className="nav-icon" />
-          <span className="nav-label">{tab.label}</span>
+          <div className="avatar-circle">
+            <img src="/images/profile.png" alt="Profile" className="avatar-img" />
+          </div>
+          <div className="profile-pill">
+            <span className="profile-pill-name">{name}</span>
+            <span className="profile-pill-level">Lv. {level}</span>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Bottom-Right Floating Fullscreen Button (directly under map recenter) */}
+      {activeScreen === 'map' && (
+        <div className="floating-fullscreen-container">
+          <FullscreenButton />
+        </div>
+      )}
+
+      {/* 3. Bottom-Center Circular 'X' Close Button */}
+      {activeScreen !== 'map' && (
+        <button 
+          className="floating-close-btn"
+          onClick={() => setActiveScreen('map')}
+          aria-label="Close Screen"
+        >
+          <Icon icon="ph:x-bold" style={{ fontSize: '20px' }} />
         </button>
-      ))}
-    </nav>
+      )}
+    </div>
   )
 }

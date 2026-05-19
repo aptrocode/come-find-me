@@ -5,7 +5,7 @@ import { OrbitControls, Center, ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
 import type { CaughtCreature } from '../../../types'
 import { useAdminStore } from '../../../store/useAdminStore'
-import CreatureModel from '../../atoms/CreatureModel'
+import CreatureSequence from '../../atoms/CreatureSequence'
 import ErrorBoundary from '../../atoms/ErrorBoundary'
 import BackButton from '../../atoms/BackButton'
 import './CreatureDetail.css'
@@ -16,24 +16,14 @@ const TYPE_EMOJI: Record<string, string> = {
 }
 
 const TYPE_GRADIENTS: Record<string, string> = {
-  fire: 'linear-gradient(160deg, #1a0a00 0%, #2d1200 30%, #4a1a00 60%, #0a0e27 100%)',
-  water: 'linear-gradient(160deg, #001a2e 0%, #00263d 30%, #003850 60%, #0a0e27 100%)',
-  grass: 'linear-gradient(160deg, #0a1a00 0%, #122600 30%, #1a3800 60%, #0a0e27 100%)',
-  electric: 'linear-gradient(160deg, #1a1500 0%, #2d2400 30%, #3d3000 60%, #0a0e27 100%)',
-  dark: 'linear-gradient(160deg, #0d0020 0%, #1a0040 30%, #260060 60%, #0a0e27 100%)',
-  normal: 'linear-gradient(160deg, #15102a 0%, #1e1840 30%, #2a2055 60%, #0a0e27 100%)',
+  fire: 'linear-gradient(160deg, #2d0e00 0%, #4a1a00 30%, #291a10 60%, #352b67 100%)',
+  water: 'linear-gradient(160deg, #001f3f 0%, #003366 30%, #002244 60%, #352b67 100%)',
+  grass: 'linear-gradient(160deg, #0f280a 0%, #1d4010 30%, #152210 60%, #352b67 100%)',
+  electric: 'linear-gradient(160deg, #2d2800 0%, #4a4000 30%, #282510 60%, #352b67 100%)',
+  dark: 'linear-gradient(160deg, #150a25 0%, #220f3a 30%, #1c152a 60%, #352b67 100%)',
+  normal: 'linear-gradient(160deg, #221a3a 0%, #2e2455 30%, #242038 60%, #352b67 100%)',
 }
 
-// ─── Slow auto-rotate for the 3D model ────────────────────────────
-function AutoRotate({ children }: { children: React.ReactNode }) {
-  const ref = useRef<THREE.Group>(null)
-  useFrame((_, dt) => {
-    if (ref.current) {
-      ref.current.rotation.y -= dt * 0.3
-    }
-  })
-  return <group ref={ref}>{children}</group>
-}
 
 // ─── 3D loading fallback ──────────────────────────────────────────
 function DetailLoadingFallback() {
@@ -68,10 +58,16 @@ export default function CreatureDetail({ entry, onClose }: CreatureDetailProps) 
   const { cp, caughtAt } = entry
   const creature = currentCreature
 
-  const modelUrl = creature.modelUrl || '/models/bikini-girl.glb'
+
   const typeEmoji = TYPE_EMOJI[creature.type] || '✨'
   const bgGradient = TYPE_GRADIENTS[creature.type] || TYPE_GRADIENTS.normal
   const rarityLabel = creature.rarity.charAt(0).toUpperCase() + creature.rarity.slice(1)
+
+  const sequenceUrl = creature.sequenceUrl || '/models/Gracie/webp/Gracie_'
+  const sequenceFrames = creature.sequenceFrames ?? 121
+  const sequenceFps = creature.sequenceFps ?? 30
+  const sequenceScale = creature.sequenceScale ?? 1.2
+  const sequenceFormat = creature.sequenceFormat || 'webp'
 
   const caughtDate = new Date(caughtAt)
   const dateStr = caughtDate.toLocaleDateString('id-ID', {
@@ -154,13 +150,15 @@ export default function CreatureDetail({ entry, onClose }: CreatureDetailProps) 
                 <directionalLight position={[-3, 4, -2]} intensity={0.4} color={creature.color} />
                 <hemisphereLight args={[creature.color, '#0a0a1a', 0.3]} />
 
-                <AutoRotate>
-                  <CreatureModel 
-                    url={modelUrl} 
+                  <CreatureSequence 
+                    sequenceUrl={sequenceUrl}
+                    sequenceFrames={sequenceFrames}
+                    sequenceFps={sequenceFps}
+                    sequenceScale={sequenceScale}
+                    sequenceFormat={sequenceFormat}
                     scale={creature.modelScale ?? 2.2} 
                     position={[creature.modelX ?? 0, creature.modelY ?? -0.3, 0]} 
                   />
-                </AutoRotate>
 
                 <ContactShadows
                   position={[0, -1.5, 0]}

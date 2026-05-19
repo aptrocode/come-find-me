@@ -103,5 +103,29 @@ export function useSpawnManager(playerPosition: Position | null) {
     return () => clearInterval(interval)
   }, [playerPosition, trySpawn, cleanExpiredSpawns, spawnConfig.spawnInterval, creatures.length]) 
 
+  // ── Minimum spawn detector ──
+  // Checks every 2 seconds if spawn count drops below minimum (2).
+  // Immediately spawns replacements so the map never feels empty.
+  useEffect(() => {
+    if (!playerPosition || creatures.length === 0) return
+
+    const MIN_SPAWNS = 2
+    const CHECK_INTERVAL = 2000
+
+    const checker = setInterval(() => {
+      const currentSpawns = useGameStore.getState().spawns
+      const activeCount = currentSpawns.filter(s => !s.isDespawning).length
+      
+      if (activeCount < MIN_SPAWNS) {
+        const needed = MIN_SPAWNS - activeCount
+        for (let i = 0; i < needed; i++) {
+          setTimeout(() => trySpawn(), i * 200)
+        }
+      }
+    }, CHECK_INTERVAL)
+
+    return () => clearInterval(checker)
+  }, [playerPosition, trySpawn, creatures.length])
+
   return { spawns, removeSpawn }
 }

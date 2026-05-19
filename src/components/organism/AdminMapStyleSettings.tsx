@@ -90,6 +90,22 @@ export default function AdminMapStyleSettings({ mapConfig, onMapChange, onReset 
             </button>
           </div>
         </div>
+
+        <div className="setting-item">
+          <label>Global Creature Pin Scale</label>
+          <p className="setting-desc">Skala ukuran pin/marker monster di peta secara global.</p>
+          <div className="setting-control">
+            <input 
+              type="number"
+              className="setting-input"
+              min={0.1}
+              max={5.0}
+              step={0.05}
+              value={mapConfig.creatureMarkerScale ?? 1.0}
+              onChange={e => onMapChange({ ...mapConfig, creatureMarkerScale: Number(e.target.value) })}
+            />
+          </div>
+        </div>
       </div>
     </AdminSectionCard>
   )

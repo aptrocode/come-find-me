@@ -52,7 +52,11 @@ export default function InventoryScreen() {
                 onClick={() => handleSelect(entry)}
               >
                 <div className="inv-card-emoji" style={{ filter: `drop-shadow(0 2px 8px ${current.color}40)` }}>
-                  {current.emoji}
+                  {current.emoji.startsWith('/') || current.emoji.startsWith('http') || current.emoji.includes('.') ? (
+                    <img src={current.emoji} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', transform: `scale(${current.iconScale ?? 1.0})` }} />
+                  ) : (
+                    <span style={{ display: 'inline-block', transform: `scale(${current.iconScale ?? 1.0})` }}>{current.emoji}</span>
+                  )}
                 </div>
                 <div className="inv-card-info">
                   <span className="inv-card-name">{current.name}</span>

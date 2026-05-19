@@ -1,8 +1,82 @@
-/* ===========================
-   CSS Reset & Globals
-   =========================== */
+/* ==========================================================================
+   DESIGN TOKENS: Mie Sedaap Inspired Color Palette
+   ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
 
+:root {
+  /* ─── Mie Sedaap Palette Brand Colors ─── */
+  --ms-deep-indigo: #352B67;
+  --ms-main-red: #DC2122;
+  --ms-dark-red-shadow: #B03631;
+  --ms-white-bg: #FAFAFA;
+  --ms-light-cream: #EFE4B0;
+  --ms-golden-cream: #DECB81;
+  --ms-noodle-orange: #DC9C38;
+  --ms-deep-orange: #D0702C;
+  --ms-dark-brown-shadow: #421D18;
+  --ms-green-accent: #719E43;
+  --ms-light-grey-shadow: #C4C2C3;
+
+  /* ─── Semantic Theme variables (Default: Dark Mode) ─── */
+  --bg-main: var(--ms-dark-brown-shadow);
+  --bg-main-gradient: radial-gradient(circle at 50% 0%, var(--ms-deep-indigo) 0%, var(--ms-dark-brown-shadow) 80%);
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-border: 1px solid rgba(255, 255, 255, 0.08);
+  --bg-card-hover: rgba(255, 255, 255, 0.06);
+  --bg-card-active: rgba(255, 255, 255, 0.08);
+  
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color-focus: var(--ms-golden-cream);
+  
+  --color-primary: var(--ms-main-red);
+  --color-primary-hover: var(--ms-dark-red-shadow);
+  --color-secondary: var(--ms-noodle-orange);
+  --color-accent: var(--ms-deep-orange);
+  --color-success: var(--ms-green-accent);
+  
+  --text-main: var(--ms-white-bg);
+  --text-dim: var(--ms-light-cream);
+  --text-muted: rgba(255, 255, 255, 0.4);
+  --text-inverse: var(--ms-dark-brown-shadow);
+
+  /* ─── Component Specific ─── */
+  --bg-hud: rgba(66, 29, 24, 0.75); /* Frosty dark brown shadow */
+  --border-hud: rgba(255, 255, 255, 0.08);
+  --bg-nav: rgba(66, 29, 24, 0.9);
+  --bg-detail-card: rgba(53, 43, 103, 0.95); /* Deep indigo card */
+  --bg-input: rgba(255, 255, 255, 0.04);
+}
+
+/* ─── Theme Overrides (Light Theme) ─── */
+.light-theme,
+.light-theme body,
+.light-theme #root {
+  --bg-main: var(--ms-white-bg);
+  --bg-main-gradient: linear-gradient(135deg, var(--ms-white-bg) 0%, var(--ms-light-cream) 100%);
+  --bg-card: #ffffff;
+  --bg-card-border: 1px solid var(--ms-golden-cream);
+  --bg-card-hover: var(--ms-light-cream);
+  --bg-card-active: var(--ms-golden-cream);
+  
+  --border-color: var(--ms-golden-cream);
+  --border-color-focus: var(--ms-deep-orange);
+
+  --text-main: var(--ms-dark-brown-shadow);
+  --text-dim: var(--ms-deep-indigo);
+  --text-muted: rgba(66, 29, 24, 0.6);
+  --text-inverse: var(--ms-white-bg);
+
+  --bg-hud: rgba(239, 228, 176, 0.85); /* Frosty light cream glass */
+  --border-hud: rgba(222, 203, 129, 0.3);
+  --bg-nav: rgba(239, 228, 176, 0.9);
+  --bg-detail-card: rgba(250, 250, 250, 0.95);
+  --bg-input: rgba(53, 43, 103, 0.04);
+}
+
+/* ==========================================================================
+   CSS RESET & GLOBALS
+   ========================================================================== */
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -13,14 +87,15 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #0a0e27;
-  color: #fff;
+  background: var(--bg-main);
+  color: var(--text-main);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 #root {

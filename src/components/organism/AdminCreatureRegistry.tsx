@@ -50,7 +50,13 @@ export default function AdminCreatureRegistry({
         {creatures.map(c => (
           <div key={c.id} className="creature-card" style={{ '--accent': c.color } as React.CSSProperties}>
             <div className="creature-card-left">
-              <div className="creature-card-emoji">{c.emoji}</div>
+              <div className="creature-card-emoji">
+                {c.emoji.startsWith('/') || c.emoji.startsWith('http') || c.emoji.includes('.') ? (
+                  <img src={c.emoji} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px', transform: `scale(${c.iconScale ?? 1.0})` }} />
+                ) : (
+                  <span style={{ display: 'inline-block', transform: `scale(${c.iconScale ?? 1.0})` }}>{c.emoji}</span>
+                )}
+              </div>
               <div className="creature-card-info">
                 <span className="creature-card-name">{c.name}</span>
                 <div className="creature-card-meta">

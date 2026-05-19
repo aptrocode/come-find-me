@@ -7,7 +7,7 @@ import { ContactShadows, Center } from '@react-three/drei'
 import * as THREE from 'three'
 import { useGameStore } from '../../../store/useGameStore'
 import { useAdminStore } from '../../../store/useAdminStore'
-import CreatureModel from '../../atoms/CreatureModel'
+import CreatureSequence from '../../atoms/CreatureSequence'
 import type { CreatureBounds } from '../../atoms/CreatureModel'
 import BallModel from '../../atoms/BallModel'
 import './EncounterScreen.css'
@@ -440,7 +440,11 @@ export default function EncounterScreen() {
   const { creature, cp } = activeEncounter
   const rarityLabel = creature.rarity.charAt(0).toUpperCase() + creature.rarity.slice(1)
   const isTransitioning = encounterPhase !== 'active'
-  const modelUrl = creature.modelUrl || '/models/bikini-girl.glb'
+  const sequenceUrl = creature.sequenceUrl || '/models/Gracie/webp/Gracie_'
+  const sequenceFrames = creature.sequenceFrames ?? 121
+  const sequenceFps = creature.sequenceFps ?? 30
+  const sequenceScale = creature.sequenceScale ?? 1.2
+  const sequenceFormat = creature.sequenceFormat || 'webp'
 
   return (
     <div className={`encounter-overlay ${isTransitioning || isClosing ? 'transitioning' : ''} ${isClosing ? 'closing-zoom' : ''}`}>
@@ -459,8 +463,12 @@ export default function EncounterScreen() {
 
                 {/* Target Model */}
                 {(!encounterResult || encounterResult === 'missed') && (
-                  <CreatureModel 
-                    url={modelUrl} 
+                  <CreatureSequence 
+                    sequenceUrl={sequenceUrl}
+                    sequenceFrames={sequenceFrames}
+                    sequenceFps={sequenceFps}
+                    sequenceScale={sequenceScale}
+                    sequenceFormat={sequenceFormat}
                     scale={creature.modelScale ?? 2.5} 
                     position={[creature.modelX ?? 0, creature.modelY ?? 0, creature.modelZ ?? -3]} 
                     onBoundsComputed={handleBoundsComputed} 

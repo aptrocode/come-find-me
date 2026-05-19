@@ -2,7 +2,6 @@ import { useEffect, lazy, Suspense } from 'react'
 import GameMap from '../components/organism/Map/GameMap'
 import TopBar from '../components/molecules/HUD/TopBar'
 import BottomNav from '../components/molecules/HUD/BottomNav'
-import FullscreenButton from '../components/atoms/FullscreenButton'
 import EncounterScreen from '../components/organism/Encounter/EncounterScreen'
 import DebugOverlay from '../components/molecules/Debug/DebugOverlay'
 import ProfileScreen from '../components/organism/Profile/ProfileScreen'
@@ -41,13 +40,6 @@ export default function HomePage() {
       {/* HUD Overlay */}
       <TopBar />
       <BottomNav />
-
-      {/* Utilities - Only show on Map tab */}
-      {activeScreen === 'map' && !activeEncounter && (
-        <div style={{ position: 'fixed', top: '7%', right: '10px', zIndex: 1000 }}>
-          <FullscreenButton />
-        </div>
-      )}
 
       {/* Debug Info Overlay */}
       <DebugOverlay />

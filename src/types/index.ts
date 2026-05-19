@@ -18,11 +18,16 @@ export interface Creature {
   baseCP: number
   description: string
   color: string        // Theme color for UI
-  modelUrl?: string    // Path to GLB model (e.g. '/models/bikini-girl.glb')
-  modelX?: number      // Manual X offset
-  modelY?: number      // Manual Y offset
-  modelZ?: number      // Manual Z offset
-  modelScale?: number  // Manual scale override
+  modelX?: number      // Sprite X offset in 3D space
+  modelY?: number      // Sprite Y offset in 3D space
+  modelZ?: number      // Sprite Z offset (depth) in 3D space
+  modelScale?: number  // Group scale multiplier
+  sequenceUrl?: string // Path prefix for 2D image sequence (e.g. '/models/Gracie/webp/Gracie_')
+  sequenceFrames?: number // Total frames in sequence
+  sequenceFps?: number // Playback speed in frames per second
+  sequenceScale?: number // Display size of the 2D sprite (distanceFactor for Html)
+  sequenceFormat?: string // File extension: 'webp' or 'png'
+  iconScale?: number // Scale multiplier for the map/inventory emoji icon (default 1.0)
 }
 
 export interface SpawnPoint {
@@ -120,6 +125,7 @@ export interface MapConfig {
   styleUrl?: string
   lightPreset?: 'day' | 'dusk' | 'dawn' | 'night'
   showLabels?: boolean
+  creatureMarkerScale?: number
 }
 
 export interface PlayerConfig {

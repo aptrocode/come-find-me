@@ -165,14 +165,15 @@ export default function AdminPage() {
     const changes: { label: string; old: unknown; new: unknown }[] = []
 
     const compare = <T extends object>(obj1: T, obj2: T, prefix: string) => {
-      (Object.keys(obj1) as Array<keyof T>).forEach(key => {
-        const val1 = obj1[key]
-        const val2 = obj2[key]
+      const keys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})]) as Set<keyof T>
+      keys.forEach(key => {
+        const val1 = obj1?.[key]
+        const val2 = obj2?.[key]
         if (JSON.stringify(val1) !== JSON.stringify(val2)) {
           changes.push({
             label: `${prefix}: ${String(key).replace(/([A-Z])/g, ' $1').toLowerCase()}`,
-            old: val1,
-            new: val2
+            old: val1 === undefined ? '(new setting)' : val1,
+            new: val2 === undefined ? '(deleted)' : val2
           })
         }
       })
@@ -208,14 +209,16 @@ export default function AdminPage() {
       confirmLabel: 'Apply All Changes',
       type: 'info',
       onConfirm: () => {
-        adminStore.setSpawnConfig(localSpawnConfig)
-        adminStore.setRarityWeights(localRarityWeights)
-        adminStore.setCatchConfig(localCatchConfig)
-        adminStore.setEncounterPhysics(localEncounterPhysics)
-        adminStore.setDebugSettings(localDebugSettings)
-        adminStore.setEventArea(localEventArea)
-        adminStore.setMapConfig(localMapConfig)
-        adminStore.setPlayerConfig(localPlayerConfig)
+        adminStore.setMultipleConfigs({
+          spawnConfig: localSpawnConfig,
+          rarityWeights: localRarityWeights,
+          catchConfig: localCatchConfig,
+          encounterPhysics: localEncounterPhysics,
+          debugSettings: localDebugSettings,
+          eventArea: localEventArea,
+          mapConfig: localMapConfig,
+          playerConfig: localPlayerConfig
+        })
         alert('Changes applied & saved successfully!')
       },
       onClose: () => setConfirmState(null),
